@@ -1,0 +1,50 @@
+antlr4-python3-runtime==4.9.3
+brotlipy==0.7.0
+captum==0.6.0
+certifi @ file:///croot/certifi_1671487769961/work/certifi
+cffi @ file:///croot/cffi_1670423208954/work
+charset-normalizer @ file:///tmp/build/80754af9/charset-normalizer_1630003229654/work
+contourpy==1.0.7
+cryptography @ file:///croot/cryptography_1673298753778/work
+cycler==0.11.0
+flit_core @ file:///opt/conda/conda-bld/flit-core_1644941570762/work/source/flit_core
+fonttools==4.38.0
+hydra-core==1.3.1
+idna @ file:///croot/idna_1666125576474/work
+imageio==2.25.0
+joblib==1.2.0
+kiwisolver==1.4.4
+matplotlib==3.6.3
+mkl-fft==1.3.1
+mkl-random @ file:///tmp/build/80754af9/mkl_random_1626186066731/work
+mkl-service==2.4.0
+networkx==3.0
+numpy @ file:///croot/numpy_and_numpy_base_1672336185480/work
+omegaconf==2.3.0
+opencv-python==4.7.0.68
+packaging==23.0
+Pillow==9.3.0
+plotly==5.13.0
+protobuf==3.19.6
+pycparser @ file:///tmp/build/80754af9/pycparser_1636541352034/work
+pyOpenSSL @ file:///opt/conda/conda-bld/pyopenssl_1643788558760/work
+pyparsing==3.0.9
+PySocks @ file:///tmp/build/80754af9/pysocks_1605305812635/work
+python-dateutil==2.8.2
+PyWavelets==1.4.1
+PyYAML==6.0
+quantus==0.3.2
+requests @ file:///opt/conda/conda-bld/requests_1657734628632/work
+scikit-image==0.19.3
+scikit-learn==1.2.1
+scipy==1.10.0
+six @ file:///tmp/build/80754af9/six_1644875935023/work
+tenacity==8.1.0
+threadpoolctl==3.1.0
+tifffile==2023.1.23.1
+torch==1.12.1
+torchaudio==0.12.1
+torchvision==0.13.1
+tqdm==4.64.1
+typing_extensions @ file:///croot/typing_extensions_1669924550328/work
+urllib3 @ file:///croot/urllib3_1673575502006/work
