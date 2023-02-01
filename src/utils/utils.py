@@ -7,7 +7,6 @@ from typing import Any, Callable, Dict, List
 import hydra
 from omegaconf import DictConfig
 from pytorch_lightning import Callback
-from pytorch_lightning.loggers import LightningLoggerBase
 from pytorch_lightning.utilities import rank_zero_only
 
 from src.utils import pylogger, rich_utils
@@ -16,17 +15,6 @@ log = pylogger.get_pylogger(__name__)
 
 
 def task_wrapper(task_func: Callable) -> Callable:
-    """Optional decorator that wraps the task function in extra utilities.
-
-    Makes multirun more resistant to failure.
-
-    Utilities:
-    - Calling the `utils.extras()` before the task is started
-    - Calling the `utils.close_loggers()` after the task is finished or failed
-    - Logging the exception if occurs
-    - Logging the output dir
-    """
-
     def wrap(cfg: DictConfig):
 
         # execute the task
@@ -35,7 +23,7 @@ def task_wrapper(task_func: Callable) -> Callable:
             # apply extra utilities
             extras(cfg)
 
-            metric_dict, object_dict = task_func(cfg=cfg)
+            task_func(cfg=cfg)
 
         # things to do if exception occurs
         except Exception as ex:
@@ -53,10 +41,7 @@ def task_wrapper(task_func: Callable) -> Callable:
             # display output dir path in terminal
             log.info(f"Output dir: {cfg.paths.output_dir}")
 
-            # close loggers (even if exception occurs so multirun won't fail)
-            close_loggers()
-
-        return metric_dict, object_dict
+        # return metric_dict, object_dict
 
     return wrap
 
@@ -108,103 +93,6 @@ def instantiate_callbacks(callbacks_cfg: DictConfig) -> List[Callback]:
             callbacks.append(hydra.utils.instantiate(cb_conf))
 
     return callbacks
-
-
-def instantiate_loggers(logger_cfg: DictConfig) -> List[LightningLoggerBase]:
-    """Instantiates loggers from config."""
-    logger: List[LightningLoggerBase] = []
-
-    if not logger_cfg:
-        log.warning("No logger configs found! Skipping...")
-        return logger
-
-    if not isinstance(logger_cfg, DictConfig):
-        raise TypeError("Logger config must be a DictConfig!")
-
-    for _, lg_conf in logger_cfg.items():
-        if isinstance(lg_conf, DictConfig) and "_target_" in lg_conf:
-            log.info(f"Instantiating logger <{lg_conf._target_}>")
-            logger.append(hydra.utils.instantiate(lg_conf))
-
-    return logger
-
-
-@rank_zero_only
-def log_hyperparameters(object_dict: dict) -> None:
-    """Controls which config parts are saved by lightning loggers.
-
-    Additionally saves:
-    - Number of model parameters
-    """
-
-    hparams = {}
-
-    cfg = object_dict["cfg"]
-    model = object_dict["model"]
-    trainer = object_dict["trainer"]
-
-    if not trainer.logger:
-        log.warning("Logger not found! Skipping hyperparameter logging...")
-        return
-
-    hparams["model"] = cfg["model"]
-
-    # save number of model parameters
-    hparams["model/params/total"] = sum(p.numel() for p in model.parameters())
-    hparams["model/params/trainable"] = sum(
-        p.numel() for p in model.parameters() if p.requires_grad
-    )
-    hparams["model/params/non_trainable"] = sum(
-        p.numel() for p in model.parameters() if not p.requires_grad
-    )
-
-    hparams["data"] = cfg["data"]
-    hparams["trainer"] = cfg["trainer"]
-
-    hparams["callbacks"] = cfg.get("callbacks")
-    hparams["extras"] = cfg.get("extras")
-
-    hparams["task_name"] = cfg.get("task_name")
-    hparams["tags"] = cfg.get("tags")
-    hparams["ckpt_path"] = cfg.get("ckpt_path")
-    hparams["seed"] = cfg.get("seed")
-
-    # send hparams to all loggers
-    for logger in trainer.loggers:
-        logger.log_hyperparams(hparams)
-
-
-def get_metric_value(metric_dict: dict, metric_name: str) -> float:
-    """Safely retrieves value of the metric logged in LightningModule."""
-
-    if not metric_name:
-        log.info("Metric name is None! Skipping metric value retrieval...")
-        return None
-
-    if metric_name not in metric_dict:
-        raise Exception(
-            f"Metric value not found! <metric_name={metric_name}>\n"
-            "Make sure metric name logged in LightningModule is correct!\n"
-            "Make sure `optimized_metric` name in `hparams_search` config is correct!"
-        )
-
-    metric_value = metric_dict[metric_name].item()
-    log.info(f"Retrieved metric value! <{metric_name}={metric_value}>")
-
-    return metric_value
-
-
-def close_loggers() -> None:
-    """Makes sure all loggers closed properly (prevents logging failure during multirun)."""
-
-    log.info("Closing loggers...")
-
-    if find_spec("wandb"):  # if wandb is installed
-        import wandb
-
-        if wandb.run:
-            log.info("Closing wandb!")
-            wandb.finish()
 
 
 @rank_zero_only

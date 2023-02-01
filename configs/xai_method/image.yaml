@@ -1,0 +1,52 @@
+# Batch:
+feature_permutation: False
+
+feature_ablatation: False
+fa_baselines: 0
+
+gcam: True
+
+scam: True
+scam_batch_size: 32
+
+gcampp: True
+
+# Single:
+
+occlusion: True
+occ_strides: 10
+occ_sliding_window_shapes: 15
+occ_baselines: 0
+
+lime: True
+lime_n_samples: 50
+lime_perturbations_per_eval: 1
+
+kernel_shap: True
+ks_baselines: 0
+ks_n_samples: 50
+ks_perturbations_per_eval: 1
+
+saliency: True
+
+input_x_gradient: True
+
+guided_backprob: True
+
+ig: True
+ig_baselines: 0
+ig_n_steps: 50
+
+eg: True
+eg_n_samples: 5 # 80
+eg_stdevs: 0.0 # 0.001
+
+deeplift: True
+dl_eps: 0.0000000001
+dl_baselines: 0
+
+
+deeplift_shap: True
+
+lrp: True
+
