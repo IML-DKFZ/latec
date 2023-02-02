@@ -226,10 +226,8 @@ class LRP(GradientAttribution):
         else:
             return _format_output(is_inputs_tuple, relevances)  # type: ignore
 
-
     def has_convergence_delta(self) -> bool:
         return True
-
 
     def compute_convergence_delta(
         self, attributions: Union[Tensor, Tuple[Tensor, ...]], output: Tensor
@@ -269,7 +267,6 @@ class LRP(GradientAttribution):
         else:
             summed_attr = _sum_rows(attributions)
         return output.flatten() - summed_attr.flatten()
-
 
     def _get_layers(self, model: Module) -> None:
         for layer in model.children():
@@ -411,6 +408,7 @@ class LRP(GradientAttribution):
         )
         return self.model(*adjusted_inputs)
 
+
 SUPPORTED_LAYERS_WITH_RULES = {
     nn.MaxPool1d: EpsilonRule,
     nn.MaxPool2d: EpsilonRule,
@@ -429,4 +427,13 @@ SUPPORTED_LAYERS_WITH_RULES = {
     Addition_Module: EpsilonRule,
 }
 
-SUPPORTED_NON_LINEAR_LAYERS = [nn.Tanh, nn.ReLU, nn.GELU, nn.SiLU, nn.Sigmoid, nn.Dropout, torchvision.ops.StochasticDepth]
+SUPPORTED_NON_LINEAR_LAYERS = [
+    nn.Tanh,
+    nn.ReLU,
+    nn.GELU,
+    nn.SiLU,
+    nn.Sigmoid,
+    nn.Dropout,
+    torchvision.ops.StochasticDepth,
+]
+

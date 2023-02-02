@@ -16,20 +16,21 @@ from captum.attr import (
     DeepLiftShap,
 )
 
-from pytorch_grad_cam import GradCAM, ScoreCAM, GradCAMPlusPlus
+from pytorch_grad_cam import GradCAM, GradCAMPlusPlus
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
-from pytorch_grad_cam.ablation_layer import AblationLayerVit
 
 from modules.components.lrp import LRP
+from modules.components.score_cam import ScoreCAM
+
 
 def reshape_transform(tensor, height=14, width=14):
-    result = tensor[:, 1:, :].reshape(tensor.size(0),
-                                      height, width, tensor.size(2))
+    result = tensor[:, 1:, :].reshape(tensor.size(0), height, width, tensor.size(2))
 
     # Bring the channels to the first dimension,
     # like in CNNs.
     result = result.transpose(2, 3).transpose(1, 2)
     return result
+
 
 class XAIMethodsModule:
     def __init__(self, cfg, model, x_batch):
@@ -41,7 +42,7 @@ class XAIMethodsModule:
             layer = model.features[1]
             reshap = None
         elif model.__class__.__name__ == "EfficientNet":
-            layer = model.features[1][0].block # find optimal layers
+            layer = model.features[1][0].block  # find optimal layers
             reshap = None
         else:
             layer = [model.blocks[-1]]
@@ -91,21 +92,36 @@ class XAIMethodsModule:
                 attr.append(self.fp.attribute(x_batch, target=y_batch))
             if self.xai_cfg.feature_ablatation:
                 attr.append(
-                    self.fa.attribute(x_batch, target=y_batch, baselines=self.xai_cfg.fa_baselines)
+                    self.fa.attribute(
+                        x_batch, target=y_batch, baselines=self.xai_cfg.fa_baselines
+                    )
                 )
             if self.xai_cfg.gcam:
-                attr_gcam = self.gcam(input_tensor=x_batch, targets=[ClassifierOutputTarget(y) for y in y_batch ])
-                attr.append(np.repeat(np.expand_dims(attr_gcam,1),3,axis = 1)) # /3 ?
+                attr_gcam = self.gcam(
+                    input_tensor=x_batch,
+                    targets=[ClassifierOutputTarget(y) for y in y_batch],
+                )
+                attr.append(np.repeat(np.expand_dims(attr_gcam, 1), 3, axis=1))  # /3 ?
             if self.xai_cfg.scam:
-                attr_scam = self.scam(input_tensor=x_batch, targets=[ClassifierOutputTarget(y) for y in y_batch ])
-                attr.append(np.repeat(np.expand_dims(attr_scam,1),3,axis = 1)) # /3 ?
+                attr_scam = self.scam(
+                    input_tensor=x_batch,
+                    targets=[ClassifierOutputTarget(y) for y in y_batch],
+                )
+                attr.append(np.repeat(np.expand_dims(attr_scam, 1), 3, axis=1))  # /3 ?
             if self.xai_cfg.gcampp:
-                attr_gcampp = self.gcampp(input_tensor=x_batch, targets=[ClassifierOutputTarget(y) for y in y_batch ])
-                attr.append(np.repeat(np.expand_dims(attr_gcampp,1),3,axis = 1)) # /3 ?
+                attr_gcampp = self.gcampp(
+                    input_tensor=x_batch,
+                    targets=[ClassifierOutputTarget(y) for y in y_batch],
+                )
+                attr.append(
+                    np.repeat(np.expand_dims(attr_gcampp, 1), 3, axis=1)
+                )  # /3 ?
 
         if attr is not None:
-            attr_total = np.asarray([i.detach().numpy() if torch.is_tensor(i) else i for i in attr])
-            attr_total = np.swapaxes(attr_total,0,1)
+            attr_total = np.asarray(
+                [i.detach().numpy() if torch.is_tensor(i) else i for i in attr]
+            )
+            attr_total = np.swapaxes(attr_total, 0, 1)
         else:
             attr_total = attr
 
@@ -122,7 +138,11 @@ class XAIMethodsModule:
                         x,
                         target=y,
                         strides=self.xai_cfg.occ_strides,
-                        sliding_window_shapes=(x.shape[1],self.xai_cfg.occ_sliding_window_shapes,self.xai_cfg.occ_sliding_window_shapes),
+                        sliding_window_shapes=(
+                            x.shape[1],
+                            self.xai_cfg.occ_sliding_window_shapes,
+                            self.xai_cfg.occ_sliding_window_shapes,
+                        ),
                         baselines=self.xai_cfg.occ_baselines,
                     )
                 )
@@ -175,16 +195,14 @@ class XAIMethodsModule:
                     self.dl.attribute(x, target=y, baselines=self.xai_cfg.dl_baselines)
                 )
             if self.xai_cfg.deeplift_shap:
-                attr.append(
-                    self.dlshap.attribute(
-                        x, target=y, baselines=self.x_batch
-                    )
-                )
+                attr.append(self.dlshap.attribute(x, target=y, baselines=self.x_batch))
             if self.xai_cfg.lrp:
                 attr.append(self.lrp.attribute(x, target=y))
 
         if attr is not None:
-            attr_total = np.asarray([i.detach().numpy() if torch.is_tensor(i) else i for i in attr])
+            attr_total = np.asarray(
+                [i.detach().numpy() if torch.is_tensor(i) else i for i in attr]
+            )
             attr_total = np.expand_dims(attr_total.squeeze(), 0)
         else:
             attr_total = attr

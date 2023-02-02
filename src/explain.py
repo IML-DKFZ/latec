@@ -5,7 +5,7 @@ import torch
 import pyrootutils
 import numpy as np
 import pytorch_lightning as pl
-from rich.progress import track
+from tqdm.auto import tqdm
 from omegaconf import DictConfig
 from pytorch_lightning import LightningDataModule
 from modules.models import ModelsModule
@@ -51,22 +51,32 @@ def explain(cfg: DictConfig) -> Tuple[dict, dict]:
     models = ModelsModule(cfg)
     attr_total = []
 
-    for model in (models.model_1,models.model_2,models.model_3):
-        log.info(f"Applying attribution methods for <{model.__class__.__name__}> model")
+    log.info(f"Starting Attribution computation over each Model and XAI Method")
+    for model in tqdm(
+        (models.model_1, models.model_2, models.model_3),
+        desc=f"Attribution for {cfg.data.modality} Models",
+        colour="BLUE",
+        position=0,
+        leave=True,
+    ):
 
         xai_methods = XAIMethodsModule(cfg, model, x_batch)
         attr_single = None
 
-        log.info(f"Batch-based attribution methods")
-        attr_batch = xai_methods.attribute_batch(x_batch,y_batch)
+        attr_batch = xai_methods.attribute_batch(x_batch, y_batch)
 
-        log.info(f"Single-observation-based attribution methods")
-
-        for x,y in track(zip(x_batch, y_batch)):
-            attr = xai_methods.attribute_single(x.unsqueeze(0),y)
+        for x, y in tqdm(
+            zip(x_batch, y_batch),
+            total=x_batch.shape[0],
+            desc=f"{model.__class__.__name__}",
+            colour="CYAN",
+            position=1,
+            leave=True,
+        ):
+            attr = xai_methods.attribute_single(x.unsqueeze(0), y)
 
             if attr_single is not None:
-                attr_single = np.vstack((attr_single,attr))
+                attr_single = np.vstack((attr_single, attr))
             else:
                 attr_single = attr
 
@@ -75,11 +85,21 @@ def explain(cfg: DictConfig) -> Tuple[dict, dict]:
         else:
             attr_total.append(attr_single)
 
-    attr_total = np.swapaxes(np.array(attr_total),0,1) # obs, models, XAI, c, w, h
+    attr_total = np.swapaxes(np.array(attr_total), 0, 1)  # obs, models, XAI, c, w, h
     # Insert time anyhow
-    np.savez(str(cfg.paths.root_dir) + "/data/attribution_maps/" + cfg.data.modality + "/attr_" + str(datamodule.__name__) + "_dataset_" + str(attr_total.shape[2]) + "_methods_.npz", attr_total)
-
-
+    np.savez(
+        str(cfg.paths.root_dir)
+        + "/data/attribution_maps/"
+        + cfg.data.modality
+        + "/attr_"
+        + str(datamodule.__name__)
+        + "_dataset_"
+        + str(attr_total.shape[2])
+        + "_methods_"
+        + cfg.time
+        + "_.npz",
+        attr_total,
+    )
 
 
 @hydra.main(version_base="1.3", config_path="../configs", config_name="explain.yaml")

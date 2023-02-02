@@ -39,7 +39,7 @@ def task_wrapper(task_func: Callable) -> Callable:
         finally:
 
             # display output dir path in terminal
-            log.info(f"Output dir: {cfg.paths.output_dir}")
+            log.info(f"Logs Output dir: {cfg.paths.output_dir}")
 
         # return metric_dict, object_dict
 

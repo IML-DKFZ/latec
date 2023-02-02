@@ -57,7 +57,6 @@ class ImageNetDataModule(LightningDataModule):
     def num_classes(self):
         return 1000
 
-
     def seed_worker(worker_id):
         worker_seed = torch.initial_seed() % 2 ** 32
         np.random.seed(worker_seed)
