@@ -20,7 +20,7 @@ class ImageNetDataModule(LightningDataModule):
         resize_mode="bilinear",
         crop: int = 224,
         modality: str = "Image",
-        weights_cnext="IMAGENET1K_V1",
+        weights_resnet="IMAGENET1K_V1",
         weights_effnet="IMAGENET1K_V1",
         weights_vit="IMAGENET1K_V1",
     ):

@@ -4,11 +4,11 @@ batch_size: 2
 num_workers: 0
 pin_memory: False
 resize: 256
-resize_mode: "bicubic"
+resize_mode: "bilinear"
 crop: 224
 
 modality: Image
 
-weights_cnext: "IMAGENET1K_V1"
+weights_resnet: "IMAGENET1K_V1"
 weights_effnet: "IMAGENET1K_V1"
-weights_vit: 'deit_small_patch16_224' # r 256 c 224 BILINEAR
+weights_vit: 'deit_small_patch16_224' 

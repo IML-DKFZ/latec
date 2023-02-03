@@ -19,7 +19,7 @@ from captum._utils.typing import Literal, TargetType, TensorOrTupleOfTensorsGene
 from captum.attr._utils.attribution import GradientAttribution
 from captum.attr._utils.common import _sum_rows
 from captum.attr._utils.custom_modules import Addition_Module
-from captum.attr._utils.lrp_rules import EpsilonRule, PropagationRule
+from captum.attr._utils.lrp_rules import EpsilonRule, PropagationRule, IdentityRule
 from captum.log import log_usage
 from torch import Tensor
 from torch.nn import Module
@@ -40,7 +40,7 @@ class LRP(GradientAttribution):
     Ancona et al. [https://openreview.net/forum?id=Sy21R9JAW].
     """
 
-    def __init__(self, model: Module) -> None:
+    def __init__(self, model: Module, epsilon = 1e-6) -> None:
         r"""
         Args:
 
@@ -52,6 +52,7 @@ class LRP(GradientAttribution):
         """
         GradientAttribution.__init__(self, model)
         self.model = model
+        self.epsilon = epsilon
         self._check_rules()
 
     @property
@@ -284,7 +285,7 @@ class LRP(GradientAttribution):
                 pass
             elif type(layer) in SUPPORTED_LAYERS_WITH_RULES.keys():
                 layer.activations = {}  # type: ignore
-                layer.rule = SUPPORTED_LAYERS_WITH_RULES[type(layer)]()  # type: ignore
+                layer.rule = SUPPORTED_LAYERS_WITH_RULES[type(layer)](epsilon=self.epsilon)  # type: ignore
                 layer.rule.relevance_input = defaultdict(list)  # type: ignore
                 layer.rule.relevance_output = {}  # type: ignore
             elif type(layer) in SUPPORTED_NON_LINEAR_LAYERS:

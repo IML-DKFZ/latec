@@ -1,5 +1,5 @@
 import torch
-from pytorch_grad_cam.base_cam import BaseCAM
+from modules.components.base_cam import BaseCAM
 
 
 class ScoreCAM(BaseCAM):
@@ -29,7 +29,7 @@ class ScoreCAM(BaseCAM):
             ]
 
             maxs, mins = maxs[:, :, None, None], mins[:, :, None, None]
-            upsampled = (upsampled - mins) / (maxs - mins)
+            upsampled = (upsampled - mins) / ((maxs - mins) + 1e-7)
 
             input_tensors = input_tensor[:, None, :, :] * upsampled[:, :, None, :, :]
 

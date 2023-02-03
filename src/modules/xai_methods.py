@@ -15,12 +15,13 @@ from captum.attr import (
     DeepLift,
     DeepLiftShap,
 )
-
-from pytorch_grad_cam import GradCAM, GradCAMPlusPlus
+from captum._utils.models.linear_model import SkLearnLinearModel
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 
 from modules.components.lrp import LRP
 from modules.components.score_cam import ScoreCAM
+from modules.components.grad_cam import GradCAM
+from modules.components.grad_cam_plusplus import GradCAMPlusPlus
 
 
 def reshape_transform(tensor, height=14, width=14):
@@ -38,15 +39,18 @@ class XAIMethodsModule:
         self.xai_cfg = cfg.xai_method
         self.x_batch = x_batch
 
-        if model.__class__.__name__ == "ConvNeXt":
-            layer = model.features[1]
+        if model.__class__.__name__ == "ResNet":
+            layer = [model.layer4[-1]]
             reshap = None
+            include_negative = False
         elif model.__class__.__name__ == "EfficientNet":
-            layer = model.features[1][0].block  # find optimal layers
+            layer = [model.features[-1]]  # find optimal layers
             reshap = None
+            include_negative = False
         else:
-            layer = [model.blocks[-1]]
+            layer = [model.blocks[-1].norm1]
             reshap = reshape_transform
+            include_negative = True
 
         if self.modality == "Image":
             if self.xai_cfg.feature_permutation:
@@ -56,8 +60,7 @@ class XAIMethodsModule:
             if self.xai_cfg.occlusion:
                 self.occ = Occlusion(model)
             if self.xai_cfg.lime:
-                self.lime = Lime(model)
-            if self.xai_cfg.kernel_shap:
+                self.lime = Lime(model, interpretable_model=SkLearnLinearModel("linear_model.Lasso", alpha=self.xai_cfg.lime_alpha))
                 self.ks = KernelShap(model)
             if self.xai_cfg.saliency:
                 self.sa = Saliency(model)
@@ -66,12 +69,12 @@ class XAIMethodsModule:
             if self.xai_cfg.guided_backprob:
                 self.gb = GuidedBackprop(model)
             if self.xai_cfg.gcam:
-                self.gcam = GradCAM(model, layer, reshape_transform=reshap)
+                self.gcam = GradCAM(model, layer, reshape_transform=reshap, include_negative=include_negative)
             if self.xai_cfg.scam:
                 self.scam = ScoreCAM(model, layer, reshape_transform=reshap)
                 self.scam.batch_size = self.xai_cfg.scam_batch_size
             if self.xai_cfg.gcampp:
-                self.gcampp = GradCAMPlusPlus(model, layer, reshape_transform=reshap)
+                self.gcampp = GradCAMPlusPlus(model, layer, reshape_transform=reshap, include_negative=include_negative)
             if self.xai_cfg.ig:
                 self.ig = IntegratedGradients(model)
             if self.xai_cfg.eg:
@@ -81,7 +84,7 @@ class XAIMethodsModule:
             if self.xai_cfg.deeplift_shap:
                 self.dlshap = DeepLiftShap(model)
             if self.xai_cfg.lrp:
-                self.lrp = LRP(model)
+                self.lrp = LRP(model, epsilon = self.xai_cfg.lrp_eps)
 
     def attribute_batch(self, x_batch, y_batch):
         "Attribution methods working on the full batch of observations"

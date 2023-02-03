@@ -12,20 +12,20 @@ scam_batch_size: 32
 gcampp: True
 
 # Single:
-
 occlusion: True
-occ_strides: 10
-occ_sliding_window_shapes: 15
+occ_strides: 25
+occ_sliding_window_shapes: 50
 occ_baselines: 0
 
 lime: True
-lime_n_samples: 50
-lime_perturbations_per_eval: 1
+lime_alpha: 0.5
+lime_n_samples: 100
+lime_perturbations_per_eval: 5
 
 kernel_shap: True
 ks_baselines: 0
-ks_n_samples: 50
-ks_perturbations_per_eval: 1
+ks_n_samples: 100
+ks_perturbations_per_eval: 5
 
 saliency: True
 
@@ -35,18 +35,19 @@ guided_backprob: True
 
 ig: True
 ig_baselines: 0
-ig_n_steps: 50
+ig_n_steps: 80
 
 eg: True
-eg_n_samples: 5 # 80
-eg_stdevs: 0.0 # 0.001
+eg_n_samples: 80 # 80
+eg_stdevs: 0.001 # 0.001
 
 deeplift: True
-dl_eps: 0.0000000001
+dl_eps: 0.000000001
 dl_baselines: 0
 
 
 deeplift_shap: True
 
 lrp: True
+lrp_eps: 0.001
 

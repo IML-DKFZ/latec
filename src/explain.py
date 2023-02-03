@@ -86,7 +86,7 @@ def explain(cfg: DictConfig) -> Tuple[dict, dict]:
             attr_total.append(attr_single)
 
     attr_total = np.swapaxes(np.array(attr_total), 0, 1)  # obs, models, XAI, c, w, h
-    # Insert time anyhow
+
     np.savez(
         str(cfg.paths.root_dir)
         + "/data/attribution_maps/"
