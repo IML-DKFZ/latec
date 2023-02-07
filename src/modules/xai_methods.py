@@ -9,7 +9,6 @@ from captum.attr import (
     Saliency,
     InputXGradient,
     GuidedBackprop,
-    GuidedGradCam,
     IntegratedGradients,
     GradientShap,
     DeepLift,
@@ -22,6 +21,7 @@ from modules.components.lrp import LRP
 from modules.components.score_cam import ScoreCAM
 from modules.components.grad_cam import GradCAM
 from modules.components.grad_cam_plusplus import GradCAMPlusPlus
+from modules.components.attention import AttentionLRP
 
 
 def reshape_transform(tensor, height=14, width=14):
@@ -33,11 +33,20 @@ def reshape_transform(tensor, height=14, width=14):
     return result
 
 
+def rescale_attention(tensor, height=14, width=14):
+    atten = tensor.reshape(1, 1, height, width)
+    atten = torch.nn.functional.interpolate(atten, scale_factor=16, mode="bilinear")
+    atten = atten.reshape(224, 224).detach().numpy()
+    atten = (atten - atten.min()) / (atten.max() - atten.min())
+    return atten
+
+
 class XAIMethodsModule:
     def __init__(self, cfg, model, x_batch):
         self.modality = cfg.data.modality
         self.xai_cfg = cfg.xai_method
         self.x_batch = x_batch
+        self.model = model
 
         if model.__class__.__name__ == "ResNet":
             layer = [model.layer4[-1]]
@@ -60,7 +69,12 @@ class XAIMethodsModule:
             if self.xai_cfg.occlusion:
                 self.occ = Occlusion(model)
             if self.xai_cfg.lime:
-                self.lime = Lime(model, interpretable_model=SkLearnLinearModel("linear_model.Lasso", alpha=self.xai_cfg.lime_alpha))
+                self.lime = Lime(
+                    model,
+                    interpretable_model=SkLearnLinearModel(
+                        "linear_model.Lasso", alpha=self.xai_cfg.lime_alpha
+                    ),
+                )
                 self.ks = KernelShap(model)
             if self.xai_cfg.saliency:
                 self.sa = Saliency(model)
@@ -69,12 +83,22 @@ class XAIMethodsModule:
             if self.xai_cfg.guided_backprob:
                 self.gb = GuidedBackprop(model)
             if self.xai_cfg.gcam:
-                self.gcam = GradCAM(model, layer, reshape_transform=reshap, include_negative=include_negative)
+                self.gcam = GradCAM(
+                    model,
+                    layer,
+                    reshape_transform=reshap,
+                    include_negative=include_negative,
+                )
             if self.xai_cfg.scam:
                 self.scam = ScoreCAM(model, layer, reshape_transform=reshap)
                 self.scam.batch_size = self.xai_cfg.scam_batch_size
             if self.xai_cfg.gcampp:
-                self.gcampp = GradCAMPlusPlus(model, layer, reshape_transform=reshap, include_negative=include_negative)
+                self.gcampp = GradCAMPlusPlus(
+                    model,
+                    layer,
+                    reshape_transform=reshap,
+                    include_negative=include_negative,
+                )
             if self.xai_cfg.ig:
                 self.ig = IntegratedGradients(model)
             if self.xai_cfg.eg:
@@ -83,8 +107,12 @@ class XAIMethodsModule:
                 self.dl = DeepLift(model, eps=self.xai_cfg.dl_eps)
             if self.xai_cfg.deeplift_shap:
                 self.dlshap = DeepLiftShap(model)
-            if self.xai_cfg.lrp:
-                self.lrp = LRP(model, epsilon = self.xai_cfg.lrp_eps)
+            if self.xai_cfg.lrp or self.xai_cfg.attention:
+                if model.__class__.__name__ == "VisionTransformer":
+                    self.lrp = AttentionLRP(model)
+                else:
+                    self.lrp = LRP(model, epsilon=self.xai_cfg.lrp_eps)
+
 
     def attribute_batch(self, x_batch, y_batch):
         "Attribution methods working on the full batch of observations"
@@ -199,8 +227,50 @@ class XAIMethodsModule:
                 )
             if self.xai_cfg.deeplift_shap:
                 attr.append(self.dlshap.attribute(x, target=y, baselines=self.x_batch))
+
             if self.xai_cfg.lrp:
-                attr.append(self.lrp.attribute(x, target=y))
+                if self.model.__class__.__name__ == "VisionTransformer":
+                    attr_lrp = self.lrp.generate_LRP(x, method="full", index=y)
+                    attr.append(
+                        np.repeat(
+                            np.expand_dims(attr_lrp.detach().numpy(), 1), 3, axis=1
+                        )
+                    )
+                else:
+                    attr.append(self.lrp.attribute(x, target=y))
+
+            if self.xai_cfg.attention:
+                if self.model.__class__.__name__ == "VisionTransformer":
+                    atten_raw = self.lrp.generate_LRP(x, method="last_layer_attn", index=y)
+                    attr.append(
+                        np.repeat(
+                            np.expand_dims(rescale_attention(atten_raw), (0,1)), 3, axis=1
+                        )
+                    )
+                else:
+                    attr.append(np.zeros((1, 3, 224, 224)))
+
+            if self.xai_cfg.attention:
+                if self.model.__class__.__name__ == "VisionTransformer":
+                    atten_roll = self.lrp.generate_LRP(x, method="rollout", index=y)
+                    attr.append(
+                        np.repeat(
+                            np.expand_dims(rescale_attention(atten_roll), (0,1)), 3, axis=1
+                        )
+                    )
+                else:
+                    attr.append(np.zeros((1, 3, 224, 224)))
+
+            if self.xai_cfg.attention:
+                if self.model.__class__.__name__ == "VisionTransformer":
+                    atten_lrp = self.lrp.generate_LRP(x, method="transformer_attribution", index=y)
+                    attr.append(
+                        np.repeat(
+                            np.expand_dims(rescale_attention(atten_lrp), (0,1)), 3, axis=1
+                        )
+                    )
+                else:
+                    attr.append(np.zeros((1, 3, 224, 224)))
 
         if attr is not None:
             attr_total = np.asarray(

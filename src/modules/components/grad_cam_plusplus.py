@@ -5,24 +5,33 @@ from modules.components.base_cam import BaseCAM
 
 
 class GradCAMPlusPlus(BaseCAM):
-    def __init__(self, model, target_layers, use_cuda=False,
-                 reshape_transform=None, include_negative = False):
-        super(GradCAMPlusPlus, self).__init__(model, target_layers, use_cuda,
-                                              reshape_transform,include_negative=include_negative)
+    def __init__(
+        self,
+        model,
+        target_layers,
+        use_cuda=False,
+        reshape_transform=None,
+        include_negative=False,
+    ):
+        super(GradCAMPlusPlus, self).__init__(
+            model,
+            target_layers,
+            use_cuda,
+            reshape_transform,
+            include_negative=include_negative,
+        )
 
-    def get_cam_weights(self,
-                        input_tensor,
-                        target_layers,
-                        target_category,
-                        activations,
-                        grads):
-        grads_power_2 = grads**2
+    def get_cam_weights(
+        self, input_tensor, target_layers, target_category, activations, grads
+    ):
+        grads_power_2 = grads ** 2
         grads_power_3 = grads_power_2 * grads
         # Equation 19 in https://arxiv.org/abs/1710.11063
         sum_activations = np.sum(activations, axis=(2, 3))
         eps = 0.000001
-        aij = grads_power_2 / (2 * grads_power_2 +
-                               sum_activations[:, :, None, None] * grads_power_3 + eps)
+        aij = grads_power_2 / (
+            2 * grads_power_2 + sum_activations[:, :, None, None] * grads_power_3 + eps
+        )
         # Now bring back the ReLU from eq.7 in the paper,
         # And zero out aijs where the activations are 0
         aij = np.where(grads != 0, aij, 0)
