@@ -1,9 +1,4 @@
 # Batch:
-feature_permutation: False
-
-feature_ablatation: False
-fa_baselines: 0
-
 gcam: True
 
 scam: True

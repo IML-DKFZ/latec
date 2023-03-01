@@ -33,14 +33,6 @@ def reshape_transform(tensor, height=14, width=14):
     return result
 
 
-def rescale_attention(tensor, height=14, width=14):
-    atten = tensor.reshape(1, 1, height, width)
-    atten = torch.nn.functional.interpolate(atten, scale_factor=16, mode="bilinear")
-    atten = atten.reshape(224, 224).detach().numpy()
-    atten = (atten - atten.min()) / (atten.max() - atten.min())
-    return atten
-
-
 class XAIMethodsModule:
     def __init__(self, cfg, model, x_batch):
         self.modality = cfg.data.modality
@@ -61,216 +53,147 @@ class XAIMethodsModule:
             reshap = reshape_transform
             include_negative = True
 
+        self.xai_methods = []
+        self.xai_hparams = []
+
         if self.modality == "Image":
-            if self.xai_cfg.feature_permutation:
-                self.fp = FeaturePermutation(model)
-            if self.xai_cfg.feature_ablatation:
-                self.fa = FeatureAblation(model)
             if self.xai_cfg.occlusion:
-                self.occ = Occlusion(model)
+                occ = Occlusion(model)
+                self.xai_methods.append(occ)
+                occ_hparams = {
+                    "strides": self.xai_cfg.occ_strides,
+                    "sliding_window_shapes": (
+                        x_batch.shape[1],
+                        self.xai_cfg.occ_sliding_window_shapes,
+                        self.xai_cfg.occ_sliding_window_shapes,
+                    ),
+                    "baselines": self.xai_cfg.occ_baselines,
+                }
+                self.xai_hparams.append(occ_hparams)
+
             if self.xai_cfg.lime:
-                self.lime = Lime(
+                lime = Lime(
                     model,
                     interpretable_model=SkLearnLinearModel(
                         "linear_model.Lasso", alpha=self.xai_cfg.lime_alpha
                     ),
                 )
-                self.ks = KernelShap(model)
+                self.xai_methods.append(lime)
+                lime_hparams = {
+                    "n_samples": self.xai_cfg.lime_n_samples,
+                    "perturbations_per_eval": self.xai_cfg.lime_perturbations_per_eval,
+                }
+                self.xai_hparams.append(lime_hparams)
+            if self.xai_cfg.kernel_shap:
+                ks = KernelShap(model)
+                self.xai_methods.append(ks)
+                ks_hparams = {
+                    "baselines": self.xai_cfg.ks_baselines,
+                    "n_samples": self.xai_cfg.ks_n_samples,
+                    "perturbations_per_eval": self.xai_cfg.ks_perturbations_per_eval,
+                }
+                self.xai_hparams.append(ks_hparams)
             if self.xai_cfg.saliency:
-                self.sa = Saliency(model)
+                sa = Saliency(model)
+                self.xai_methods.append(sa)
+                sa_hparams = {}
+                self.xai_hparams.append(sa_hparams)
             if self.xai_cfg.input_x_gradient:
-                self.ixg = InputXGradient(model)
+                ixg = InputXGradient(model)
+                self.xai_methods.append(ixg)
+                ixg_hparams = {}
+                self.xai_hparams.append(ixg_hparams)
             if self.xai_cfg.guided_backprob:
-                self.gb = GuidedBackprop(model)
+                gb = GuidedBackprop(model)
+                self.xai_methods.append(gb)
+                gb_hparams = {}
+                self.xai_hparams.append(gb_hparams)
             if self.xai_cfg.gcam:
-                self.gcam = GradCAM(
+                gcam = GradCAM(
                     model,
                     layer,
                     reshape_transform=reshap,
                     include_negative=include_negative,
                 )
+                self.xai_methods.append(gcam)
+                gcam_hparams = {}
+                self.xai_hparams.append(gcam_hparams)
             if self.xai_cfg.scam:
-                self.scam = ScoreCAM(model, layer, reshape_transform=reshap)
-                self.scam.batch_size = self.xai_cfg.scam_batch_size
+                scam = ScoreCAM(model, layer, reshape_transform=reshap)
+                scam.batch_size = self.xai_cfg.scam_batch_size
+                self.xai_methods.append(scam)
+                scam_hparams = {}
+                self.xai_hparams.append(scam_hparams)
             if self.xai_cfg.gcampp:
-                self.gcampp = GradCAMPlusPlus(
+                gcampp = GradCAMPlusPlus(
                     model,
                     layer,
                     reshape_transform=reshap,
                     include_negative=include_negative,
                 )
+                self.xai_methods.append(gcampp)
+                gcampp_hparams = {}
+                self.xai_hparams.append(gcampp_hparams)
             if self.xai_cfg.ig:
-                self.ig = IntegratedGradients(model)
+                ig = IntegratedGradients(model)
+                self.xai_methods.append(ig)
+                ig_hparams = {
+                    "baselines": self.xai_cfg.ig_baselines,
+                    "n_steps": self.xai_cfg.ig_n_steps,
+                }
+                self.xai_hparams.append(ig_hparams)
             if self.xai_cfg.eg:
-                self.eg = GradientShap(model)
+                eg = GradientShap(model)
+                self.xai_methods.append(eg)
+                eg_hparams = {
+                    "baselines": self.x_batch,
+                    "n_samples": self.xai_cfg.eg_n_samples,
+                    "stdevs": self.xai_cfg.eg_stdevs,
+                }
+                self.xai_hparams.append(eg_hparams)
             if self.xai_cfg.deeplift:
-                self.dl = DeepLift(model, eps=self.xai_cfg.dl_eps)
+                dl = DeepLift(model, eps=self.xai_cfg.dl_eps)
+                self.xai_methods.append(dl)
+                dl_hparams = {"baselines": self.xai_cfg.dl_baselines}
+                self.xai_hparams.append(dl_hparams)
             if self.xai_cfg.deeplift_shap:
-                self.dlshap = DeepLiftShap(model)
+                dlshap = DeepLiftShap(model)
+                self.xai_methods.append(dlshap)
+                dlshap_hparams = {"baselines": self.x_batch}
+                self.xai_hparams.append(dlshap_hparams)
+
             if self.xai_cfg.lrp or self.xai_cfg.attention:
                 if model.__class__.__name__ == "VisionTransformer":
-                    self.lrp = AttentionLRP(model)
+                    lrp = AttentionLRP(model)
+                    self.xai_methods.append(lrp)
+                    lrp_hparams = {"method": "full"}
+                    self.xai_hparams.append(lrp_hparams)
+
+                    self.xai_methods.append(lrp)
+                    raw_hparams = {"method": "last_layer_attn"}
+                    self.xai_hparams.append(raw_hparams)
+
+                    self.xai_methods.append(lrp)
+                    roll_hparams = {"method": "rollout"}
+                    self.xai_hparams.append(roll_hparams)
+
+                    self.xai_methods.append(lrp)
+                    attlrp_hparams = {"method": "transformer_attribution"}
+                    self.xai_hparams.append(attlrp_hparams)
                 else:
-                    self.lrp = LRP(model, epsilon=self.xai_cfg.lrp_eps)
+                    lrp = LRP(model, epsilon=self.xai_cfg.lrp_eps)
+                    lrp_hparams = {}
+                    self.xai_hparams.append(lrp_hparams)
+                    self.xai_methods.append(lrp)
 
-
-    def attribute_batch(self, x_batch, y_batch):
-        "Attribution methods working on the full batch of observations"
-        attr = []
-
-        if self.modality == "Image":
-            if self.xai_cfg.feature_permutation:
-                attr.append(self.fp.attribute(x_batch, target=y_batch))
-            if self.xai_cfg.feature_ablatation:
-                attr.append(
-                    self.fa.attribute(
-                        x_batch, target=y_batch, baselines=self.xai_cfg.fa_baselines
-                    )
-                )
-            if self.xai_cfg.gcam:
-                attr_gcam = self.gcam(
-                    input_tensor=x_batch,
-                    targets=[ClassifierOutputTarget(y) for y in y_batch],
-                )
-                attr.append(np.repeat(np.expand_dims(attr_gcam, 1), 3, axis=1))  # /3 ?
-            if self.xai_cfg.scam:
-                attr_scam = self.scam(
-                    input_tensor=x_batch,
-                    targets=[ClassifierOutputTarget(y) for y in y_batch],
-                )
-                attr.append(np.repeat(np.expand_dims(attr_scam, 1), 3, axis=1))  # /3 ?
-            if self.xai_cfg.gcampp:
-                attr_gcampp = self.gcampp(
-                    input_tensor=x_batch,
-                    targets=[ClassifierOutputTarget(y) for y in y_batch],
-                )
-                attr.append(
-                    np.repeat(np.expand_dims(attr_gcampp, 1), 3, axis=1)
-                )  # /3 ?
-
-        if attr is not None:
-            attr_total = np.asarray(
-                [i.detach().numpy() if torch.is_tensor(i) else i for i in attr]
-            )
-            attr_total = np.swapaxes(attr_total, 0, 1)
-        else:
-            attr_total = attr
-
-        return attr_total
-
-    def attribute_single(self, x, y):
+    def attribute(self, x, y):
         "Attribution methods working on single observations"
         attr = []
 
-        if self.modality == "Image":
-            if self.xai_cfg.occlusion:
-                attr.append(
-                    self.occ.attribute(
-                        x,
-                        target=y,
-                        strides=self.xai_cfg.occ_strides,
-                        sliding_window_shapes=(
-                            x.shape[1],
-                            self.xai_cfg.occ_sliding_window_shapes,
-                            self.xai_cfg.occ_sliding_window_shapes,
-                        ),
-                        baselines=self.xai_cfg.occ_baselines,
-                    )
-                )
-            if self.xai_cfg.lime:
-                attr.append(
-                    self.lime.attribute(
-                        x,
-                        target=y,
-                        n_samples=self.xai_cfg.lime_n_samples,
-                        perturbations_per_eval=self.xai_cfg.lime_perturbations_per_eval,
-                    )
-                )
-            if self.xai_cfg.kernel_shap:
-                attr.append(
-                    self.ks.attribute(
-                        x,
-                        target=y,
-                        baselines=self.xai_cfg.ks_baselines,
-                        n_samples=self.xai_cfg.ks_n_samples,
-                        perturbations_per_eval=self.xai_cfg.ks_perturbations_per_eval,
-                    )
-                )
-            if self.xai_cfg.saliency:
-                attr.append(self.sa.attribute(x, target=y))
-            if self.xai_cfg.input_x_gradient:
-                attr.append(self.ixg.attribute(x, target=y))
-            if self.xai_cfg.guided_backprob:
-                attr.append(self.gb.attribute(x, target=y))
-            if self.xai_cfg.ig:
-                attr.append(
-                    self.ig.attribute(
-                        x,
-                        target=y,
-                        baselines=self.xai_cfg.ig_baselines,
-                        n_steps=self.xai_cfg.ig_n_steps,
-                    )
-                )
-            if self.xai_cfg.eg:
-                attr.append(
-                    self.eg.attribute(
-                        x,
-                        target=y,
-                        baselines=self.x_batch,
-                        n_samples=self.xai_cfg.eg_n_samples,
-                        stdevs=self.xai_cfg.eg_stdevs,
-                    )
-                )
-            if self.xai_cfg.deeplift:
-                attr.append(
-                    self.dl.attribute(x, target=y, baselines=self.xai_cfg.dl_baselines)
-                )
-            if self.xai_cfg.deeplift_shap:
-                attr.append(self.dlshap.attribute(x, target=y, baselines=self.x_batch))
-
-            if self.xai_cfg.lrp:
-                if self.model.__class__.__name__ == "VisionTransformer":
-                    attr_lrp = self.lrp.generate_LRP(x, method="full", index=y)
-                    attr.append(
-                        np.repeat(
-                            np.expand_dims(attr_lrp.detach().numpy(), 1), 3, axis=1
-                        )
-                    )
-                else:
-                    attr.append(self.lrp.attribute(x, target=y))
-
-            if self.xai_cfg.attention:
-                if self.model.__class__.__name__ == "VisionTransformer":
-                    atten_raw = self.lrp.generate_LRP(x, method="last_layer_attn", index=y)
-                    attr.append(
-                        np.repeat(
-                            np.expand_dims(rescale_attention(atten_raw), (0,1)), 3, axis=1
-                        )
-                    )
-                else:
-                    attr.append(np.zeros((1, 3, 224, 224)))
-
-            if self.xai_cfg.attention:
-                if self.model.__class__.__name__ == "VisionTransformer":
-                    atten_roll = self.lrp.generate_LRP(x, method="rollout", index=y)
-                    attr.append(
-                        np.repeat(
-                            np.expand_dims(rescale_attention(atten_roll), (0,1)), 3, axis=1
-                        )
-                    )
-                else:
-                    attr.append(np.zeros((1, 3, 224, 224)))
-
-            if self.xai_cfg.attention:
-                if self.model.__class__.__name__ == "VisionTransformer":
-                    atten_lrp = self.lrp.generate_LRP(x, method="transformer_attribution", index=y)
-                    attr.append(
-                        np.repeat(
-                            np.expand_dims(rescale_attention(atten_lrp), (0,1)), 3, axis=1
-                        )
-                    )
-                else:
-                    attr.append(np.zeros((1, 3, 224, 224)))
+        for i in range(len(self.xai_methods)):
+            attr.append(
+                self.xai_methods[i].attribute(inputs=x, target=y, **self.xai_hparams[i])
+            )
 
         if attr is not None:
             attr_total = np.asarray(

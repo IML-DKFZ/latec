@@ -12,9 +12,9 @@ class ScoreCAM(BaseCAM):
             uses_gradients=False,
         )
 
-    def get_cam_weights(self, input_tensor, target_layer, targets, activations, grads):
+    def get_cam_weights(self, inputs, target_layer, targets, activations, grads):
         with torch.no_grad():
-            upsample = torch.nn.UpsamplingBilinear2d(size=input_tensor.shape[-2:])
+            upsample = torch.nn.UpsamplingBilinear2d(size=inputs.shape[-2:])
             activation_tensor = torch.from_numpy(activations)
             if self.cuda:
                 activation_tensor = activation_tensor.cuda()
@@ -31,7 +31,7 @@ class ScoreCAM(BaseCAM):
             maxs, mins = maxs[:, :, None, None], mins[:, :, None, None]
             upsampled = (upsampled - mins) / ((maxs - mins) + 1e-7)
 
-            input_tensors = input_tensor[:, None, :, :] * upsampled[:, :, None, :, :]
+            input_tensors = inputs[:, None, :, :] * upsampled[:, :, None, :, :]
 
             if hasattr(self, "batch_size"):
                 BATCH_SIZE = self.batch_size

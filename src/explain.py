@@ -63,8 +63,6 @@ def explain(cfg: DictConfig) -> Tuple[dict, dict]:
         xai_methods = XAIMethodsModule(cfg, model, x_batch)
         attr_single = None
 
-        attr_batch = xai_methods.attribute_batch(x_batch, y_batch)
-
         for x, y in tqdm(
             zip(x_batch, y_batch),
             total=x_batch.shape[0],
@@ -73,19 +71,14 @@ def explain(cfg: DictConfig) -> Tuple[dict, dict]:
             position=1,
             leave=True,
         ):
-            attr = xai_methods.attribute_single(x.unsqueeze(0), y)
+            attr = xai_methods.attribute(x.unsqueeze(0), y)
 
             if attr_single is not None:
                 attr_single = np.vstack((attr_single, attr))
             else:
                 attr_single = attr
 
-        if attr_batch is not None:
-            attr_total.append(np.hstack((attr_batch, attr_single)))
-        else:
-            attr_total.append(attr_single)
-
-    attr_total = np.swapaxes(np.array(attr_total), 0, 1)  # obs, models, XAI, c, w, h
+        attr_total.append(attr_single)  # obs , XAI, c, w, h
 
     np.savez(
         str(cfg.paths.root_dir)
@@ -94,11 +87,13 @@ def explain(cfg: DictConfig) -> Tuple[dict, dict]:
         + "/attr_"
         + str(datamodule.__name__)
         + "_dataset_"
-        + str(attr_total.shape[2])
+        + str(attr_total[0].shape[1])
         + "_methods_"
         + cfg.time
         + "_.npz",
-        attr_total,
+        attr_total[0],
+        attr_total[1],
+        attr_total[2],
     )
 
 

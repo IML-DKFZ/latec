@@ -22,7 +22,7 @@ class GradCAMPlusPlus(BaseCAM):
         )
 
     def get_cam_weights(
-        self, input_tensor, target_layers, target_category, activations, grads
+        self, inputs, target_layers, target_category, activations, grads
     ):
         grads_power_2 = grads ** 2
         grads_power_3 = grads_power_2 * grads

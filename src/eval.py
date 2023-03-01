@@ -1,10 +1,15 @@
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import hydra
+import torch
 import pyrootutils
+import numpy as np
+import pytorch_lightning as pl
+from tqdm.auto import tqdm
 from omegaconf import DictConfig
-from pytorch_lightning import LightningDataModule, LightningModule, Trainer
-from pytorch_lightning.loggers import LightningLoggerBase
+from pytorch_lightning import LightningDataModule
+from modules.models import ModelsModule
+from modules.eval_methods import EvalModule
 
 pyrootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
 # ------------------------------------------------------------------------------------ #
@@ -30,59 +35,89 @@ log = utils.get_pylogger(__name__)
 
 
 @utils.task_wrapper
-def evaluate(cfg: DictConfig) -> Tuple[dict, dict]:
-    """Evaluates given checkpoint on a datamodule testset.
+def eval(cfg: DictConfig) -> Tuple[dict, dict]:
+    # set seed for random number generators in pytorch, numpy and python.random
+    if cfg.get("seed"):
+        pl.seed_everything(cfg.seed, workers=True)
 
-    This method is wrapped in optional @task_wrapper decorator which applies extra utilities
-    before and after the call.
-
-    Args:
-        cfg (DictConfig): Configuration composed by Hydra.
-
-    Returns:
-        Tuple[dict, dict]: Dict with metrics and dict with all instantiated objects.
-    """
-
-    assert cfg.ckpt_path
+    log.info(
+        f"Loading Attributions <{cfg.attr_path}> for modality <{cfg.data.modality}>"
+    )
+    attr_data = np.load("data/attribution_maps/" + cfg.data.modality + cfg.attr_path)
+    attr_data = attr_data["arr_0"]  # obs, models, xaimethods, c , w, h
 
     log.info(f"Instantiating datamodule <{cfg.data._target_}>")
     datamodule: LightningDataModule = hydra.utils.instantiate(cfg.data)
+    dataloader = datamodule.dataloader()
 
-    log.info(f"Instantiating model <{cfg.model._target_}>")
-    model: LightningModule = hydra.utils.instantiate(cfg.model)
+    with torch.no_grad():
+        x_batch, y_batch = next(iter(dataloader))
 
-    log.info("Instantiating loggers...")
-    logger: List[LightningLoggerBase] = utils.instantiate_loggers(cfg.get("logger"))
+    x_batch = x_batch[0 : attr_data.shape[0], :]
+    y_batch = y_batch[0 : attr_data.shape[0]]
 
-    log.info(f"Instantiating trainer <{cfg.trainer._target_}>")
-    trainer: Trainer = hydra.utils.instantiate(cfg.trainer, logger=logger)
+    log.info(f"Instantiating models for <{cfg.data.modality}> data")
+    models = ModelsModule(cfg)
 
-    object_dict = {
-        "cfg": cfg,
-        "datamodule": datamodule,
-        "model": model,
-        "logger": logger,
-        "trainer": trainer,
-    }
+    eval_scores_total = []
 
-    if logger:
-        log.info("Logging hyperparameters!")
-        utils.log_hyperparameters(object_dict)
+    log.info(f"Starting Evaluation over each Model")
+    for count_model, model in tqdm(
+        enumerate([models.model_1, models.model_2, models.model_3]),
+        total=3,
+        desc=f"Eval for {datamodule.__name__}",
+        colour="BLUE",
+        position=0,
+        leave=True,
+    ):
 
-    log.info("Starting testing!")
-    trainer.test(model=model, datamodule=datamodule, ckpt_path=cfg.ckpt_path)
+        eval_scores_model = []
+        eval_methods = EvalModule(cfg, model)
 
-    # for predictions use trainer.predict(...)
-    # predictions = trainer.predict(model=model, dataloaders=dataloaders, ckpt_path=cfg.ckpt_path)
+        model = model.to(cfg.eval_method.device)
 
-    metric_dict = trainer.callback_metrics
+        n_xai = attr_data.shape[2] - (0 if count_model == 2 else 3)
 
-    return metric_dict, object_dict
+        for count_xai in tqdm(
+            range(n_xai),
+            total=n_xai,
+            desc=f"{model.__class__.__name__}",
+            colour="CYAN",
+            position=1,
+            leave=True,
+        ):
+
+            a_batch = attr_data[:, count_model, count_xai, :]
+
+            results = eval_methods.evaluate(
+                model, x_batch.cpu().numpy(), y_batch.cpu().numpy(), a_batch
+            )
+
+            eval_scores_model.append(results)
+
+        eval_scores_total.append(np.array(eval_scores_model))
+
+    eval_scores_total = np.array(eval_scores_total)
+
+    np.savez(
+        str(cfg.paths.root_dir)
+        + "/data/evaluation/"
+        + cfg.data.modality
+        + "/attr_"
+        + str(datamodule.__name__)
+        + "_dataset_"
+        + str(eval_scores_total.shape[0])
+        + "_methods"
+        + ".npz",
+        eval_scores_total,
+    )
 
 
 @hydra.main(version_base="1.3", config_path="../configs", config_name="eval.yaml")
-def main(cfg: DictConfig) -> None:
-    evaluate(cfg)
+def main(cfg: DictConfig) -> Optional[float]:
+
+    # eval the xai
+    eval(cfg)
 
 
 if __name__ == "__main__":

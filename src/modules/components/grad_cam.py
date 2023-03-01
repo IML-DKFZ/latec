@@ -20,6 +20,6 @@ class GradCAM(BaseCAM):
         )
 
     def get_cam_weights(
-        self, input_tensor, target_layer, target_category, activations, grads
+        self, inputs, target_layer, target_category, activations, grads
     ):
         return np.mean(grads, axis=(2, 3))
