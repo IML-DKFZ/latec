@@ -10,6 +10,7 @@ from omegaconf import DictConfig
 from pytorch_lightning import LightningDataModule
 from modules.models import ModelsModule
 from modules.eval_methods import EvalModule
+from modules.xai_methods import XAIMethodsModule
 
 pyrootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
 # ------------------------------------------------------------------------------------ #
@@ -44,7 +45,11 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
         f"Loading Attributions <{cfg.attr_path}> for modality <{cfg.data.modality}>"
     )
     attr_data = np.load("data/attribution_maps/" + cfg.data.modality + cfg.attr_path)
-    attr_data = attr_data["arr_0"]  # obs, models, xaimethods, c , w, h
+    attr_data = [
+        attr_data["arr_0"],
+        attr_data["arr_1"],
+        attr_data["arr_2"],
+    ]  # obs, xaimethods, c , w, h
 
     log.info(f"Instantiating datamodule <{cfg.data._target_}>")
     datamodule: LightningDataModule = hydra.utils.instantiate(cfg.data)
@@ -53,8 +58,8 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
     with torch.no_grad():
         x_batch, y_batch = next(iter(dataloader))
 
-    x_batch = x_batch[0 : attr_data.shape[0], :]
-    y_batch = y_batch[0 : attr_data.shape[0]]
+    x_batch = x_batch[0 : attr_data[0].shape[0], :]
+    y_batch = y_batch[0 : attr_data[0].shape[0]]
 
     log.info(f"Instantiating models for <{cfg.data.modality}> data")
     models = ModelsModule(cfg)
@@ -63,7 +68,7 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
 
     log.info(f"Starting Evaluation over each Model")
     for count_model, model in tqdm(
-        enumerate([models.model_1, models.model_2, models.model_3]),
+        enumerate(models.models),
         total=3,
         desc=f"Eval for {datamodule.__name__}",
         colour="BLUE",
@@ -72,25 +77,33 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
     ):
 
         eval_scores_model = []
-        eval_methods = EvalModule(cfg, model)
 
         model = model.to(cfg.eval_method.device)
 
-        n_xai = attr_data.shape[2] - (0 if count_model == 2 else 3)
-
         for count_xai in tqdm(
-            range(n_xai),
-            total=n_xai,
+            range(attr_data[count_model].shape[1]),
+            total=attr_data[count_model].shape[1],
             desc=f"{model.__class__.__name__}",
             colour="CYAN",
             position=1,
             leave=True,
         ):
 
-            a_batch = attr_data[:, count_model, count_xai, :]
+            eval_methods = EvalModule(cfg, model)
+
+            xai_methods = XAIMethodsModule(
+                cfg, model, x_batch.to(cfg.eval_method.device)
+            )
+
+            a_batch = attr_data[count_model][:, count_xai, :]
 
             results = eval_methods.evaluate(
-                model, x_batch.cpu().numpy(), y_batch.cpu().numpy(), a_batch
+                model,
+                x_batch.cpu().numpy(),
+                y_batch.cpu().numpy(),
+                a_batch,
+                xai_methods,
+                count_xai,
             )
 
             eval_scores_model.append(results)

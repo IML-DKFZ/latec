@@ -15,7 +15,6 @@ from captum.attr import (
     DeepLiftShap,
 )
 from captum._utils.models.linear_model import SkLearnLinearModel
-from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 
 from modules.components.lrp import LRP
 from modules.components.score_cam import ScoreCAM
@@ -75,7 +74,8 @@ class XAIMethodsModule:
                 lime = Lime(
                     model,
                     interpretable_model=SkLearnLinearModel(
-                        "linear_model.Lasso", alpha=self.xai_cfg.lime_alpha
+                        "linear_model.Lasso",
+                        alpha=self.xai_cfg.lime_alpha,  # , n_jobs=-1
                     ),
                 )
                 self.xai_methods.append(lime)
@@ -187,7 +187,6 @@ class XAIMethodsModule:
                     self.xai_methods.append(lrp)
 
     def attribute(self, x, y):
-        "Attribution methods working on single observations"
         attr = []
 
         for i in range(len(self.xai_methods)):
@@ -195,12 +194,8 @@ class XAIMethodsModule:
                 self.xai_methods[i].attribute(inputs=x, target=y, **self.xai_hparams[i])
             )
 
-        if attr is not None:
-            attr_total = np.asarray(
-                [i.detach().numpy() if torch.is_tensor(i) else i for i in attr]
-            )
-            attr_total = np.expand_dims(attr_total.squeeze(), 0)
-        else:
-            attr_total = attr
+        attr_total = np.asarray(
+            [i.detach().numpy() if torch.is_tensor(i) else i for i in attr]
+        )
 
-        return attr_total
+        return np.moveaxis(attr_total, 0, 1)

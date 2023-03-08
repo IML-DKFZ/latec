@@ -191,7 +191,7 @@ class EvalModule:
                     eps=self.eval_cfg.ec_eps, disable_warnings=True
                 )
 
-    def evaluate(self, model, x_batch, y_batch, a_batch):
+    def evaluate(self, model, x_batch, y_batch, a_batch, xai_methods, count_xai):
         eval_scores = []
         # Faithfulness
         if self.eval_cfg.FaithfulnessCorrelation:
@@ -247,9 +247,9 @@ class EvalModule:
             )
         if self.eval_cfg.InsertionDeletion:
             ins_auc, del_auc = self.InsertionDeletion.evaluate(
-                model=model, x_batch=x_batch, y_batch=y_batch, a_batch=a_batch,
+                model=model, x_batch=x_batch, y_batch=y_batch, a_batch=a_batch
             )
-            eval_scores.append(ins_auc)
+            eval_scores.append(ins_auc)  # not right atm
             eval_scores.append(del_auc)
 
         if self.eval_cfg.IROF:
@@ -293,6 +293,8 @@ class EvalModule:
                     x_batch=x_batch,
                     y_batch=y_batch,
                     a_batch=a_batch,
+                    explain_func=xai_methods.xai_methods[count_xai].attribute,
+                    explain_func_kwargs=xai_methods.xai_hparams[count_xai],
                     device=self.eval_cfg.device,
                 )
             )
@@ -303,6 +305,8 @@ class EvalModule:
                     x_batch=x_batch,
                     y_batch=y_batch,
                     a_batch=a_batch,
+                    explain_func=xai_methods.xai_methods[count_xai].attribute,
+                    explain_func_kwargs=xai_methods.xai_hparams[count_xai],
                     device=self.eval_cfg.device,
                 )
             )
@@ -313,6 +317,8 @@ class EvalModule:
                     x_batch=x_batch,
                     y_batch=y_batch,
                     a_batch=a_batch,
+                    explain_func=xai_methods.xai_methods[count_xai].attribute,
+                    explain_func_kwargs=xai_methods.xai_hparams[count_xai],
                     device=self.eval_cfg.device,
                 )
             )
@@ -323,6 +329,8 @@ class EvalModule:
                     x_batch=x_batch,
                     y_batch=y_batch,
                     a_batch=a_batch,
+                    explain_func=xai_methods.xai_methods[count_xai].attribute,
+                    explain_func_kwargs=xai_methods.xai_hparams[count_xai],
                     device=self.eval_cfg.device,
                 )
             )
@@ -333,6 +341,8 @@ class EvalModule:
                     x_batch=x_batch,
                     y_batch=y_batch,
                     a_batch=a_batch,
+                    explain_func=xai_methods.xai_methods[count_xai].attribute,
+                    explain_func_kwargs=xai_methods.xai_hparams[count_xai],
                     device=self.eval_cfg.device,
                 )
             )
@@ -343,6 +353,8 @@ class EvalModule:
                     x_batch=x_batch,
                     y_batch=y_batch,
                     a_batch=a_batch,
+                    explain_func=xai_methods.xai_methods[count_xai].attribute,
+                    explain_func_kwargs=xai_methods.xai_hparams[count_xai],
                     device=self.eval_cfg.device,
                 )
             )

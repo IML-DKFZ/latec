@@ -78,10 +78,7 @@ class InsertionDeletion(BaseEvaluation):
             insertion_auc_total.append(insertion_auc)
             deletion_auc_total.append(deletion_auc)
 
-        return {
-            "ins_auc": np.array(insertion_auc_total),
-            "del_auc": np.array(deletion_auc_total),
-        }
+        return np.array(insertion_auc_total), np.array(deletion_auc_total)
 
     def _procedure_perturb(self, perturber, num_pixels, indices, target):
         """ # TODO to add docs
@@ -159,4 +156,3 @@ class PixelPerturber(Perturber):
 
     def get_grid_shape(self) -> tuple:
         return self.current.shape
-

@@ -82,11 +82,11 @@ class BaseCAM:
         outputs = self.activations_and_grads(inputs)
         if target is None:
             target_categories = np.argmax(outputs.cpu().data.numpy(), axis=-1)
-            target = [
-                ClassifierOutputTarget(category) for category in target_categories
-            ]
-        else:
+            target = [ClassifierOutputTarget(category) for category in target]
+        elif len(target.shape) == 0:
             target = [ClassifierOutputTarget(target)]
+        else:
+            target = [ClassifierOutputTarget(category) for category in target]
 
         if self.uses_gradients:
             self.model.zero_grad()
@@ -104,14 +104,14 @@ class BaseCAM:
         # or something else.
         cam_per_layer = self.compute_cam_per_layer(inputs, target, eigen_smooth)
         output = self.aggregate_multi_layers(cam_per_layer)
-        return np.expand_dims(np.repeat(output, 3, axis=0), 0)
+        return np.repeat(np.expand_dims(output, 1), 3, axis=1)
 
     def get_target_width_height(self, inputs: torch.Tensor) -> Tuple[int, int]:
         width, height = inputs.size(-1), inputs.size(-2)
         return width, height
 
     def compute_cam_per_layer(
-        self, inputs: torch.Tensor, targets: List[torch.nn.Module], eigen_smooth: bool,
+        self, inputs: torch.Tensor, targets: List[torch.nn.Module], eigen_smooth: bool
     ) -> np.ndarray:
         activations_list = [
             a.cpu().data.numpy() for a in self.activations_and_grads.activations

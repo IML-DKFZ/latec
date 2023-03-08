@@ -29,7 +29,7 @@ from numpy import *
 def rescale_attention(tensor, height=14, width=14):
     atten = tensor.reshape(1, 1, height, width)
     atten = torch.nn.functional.interpolate(atten, scale_factor=16, mode="bilinear")
-    atten = atten.reshape(224, 224).detach().numpy()
+    atten = atten.reshape(224, 224).detach().cpu().numpy()
     atten = (atten - atten.min()) / (atten.max() - atten.min())
     return atten
 
@@ -47,36 +47,43 @@ class AttentionLRP:
         is_ablation=False,
         start_layer=0,
     ):
-        output = self.model(inputs)
-        kwargs = {"alpha": 1}
-        if target == None:
-            target = np.argmax(output.cpu().data.numpy(), axis=-1)
+        list = []
+        for i in range(inputs.shape[0]):
+            output = self.model(inputs[i].unsqueeze(0))
+            kwargs = {"alpha": 1}
+            if target == None:
+                target = np.argmax(output.cpu().data.numpy(), axis=-1)
 
-        one_hot = np.zeros((1, output.size()[-1]), dtype=np.float32)
-        one_hot[0, target] = 1
-        one_hot_vector = one_hot
-        one_hot = torch.from_numpy(one_hot).requires_grad_(True)
-        one_hot = torch.sum(one_hot * output)
+            one_hot = np.zeros((1, output.size()[-1]), dtype=np.float32)
+            idx = target.cpu() if len(target.shape) == 0 else target[i].cpu()
+            one_hot[0, idx] = 1
+            one_hot_vector = one_hot
+            one_hot = torch.from_numpy(one_hot).requires_grad_(True).to(inputs.device)
+            one_hot = torch.sum(one_hot * output)
 
-        self.model.zero_grad()
-        one_hot.backward(retain_graph=True)
+            self.model.zero_grad()
+            one_hot.backward(retain_graph=True)
 
-        atten = self.model.relprop(
-            torch.tensor(one_hot_vector).to(inputs.device),
-            method=method,
-            is_ablation=is_ablation,
-            start_layer=start_layer,
-            **kwargs
-        )
-
-        if method != "full":
-            atten = np.repeat(
-                np.expand_dims(rescale_attention(atten), (0, 1)), 3, axis=1,
+            atten = self.model.relprop(
+                torch.tensor(one_hot_vector).to(inputs.device),
+                method=method,
+                is_ablation=is_ablation,
+                start_layer=start_layer,
+                **kwargs
             )
-        else:
-            atten = np.repeat(np.expand_dims(atten.detach().numpy(), 1), 3, axis=1)
 
-        return atten
+            if method != "full":
+                atten = np.repeat(
+                    np.expand_dims(rescale_attention(atten), (0, 1)), 3, axis=1
+                ).squeeze()
+            else:
+                atten = np.repeat(
+                    np.expand_dims(atten.detach().cpu().numpy(), 1), 3, axis=1
+                ).squeeze()
+
+            list.append(atten)
+
+        return np.array(list)
 
 
 # class Baselines:

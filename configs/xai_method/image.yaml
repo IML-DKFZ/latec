@@ -1,11 +1,3 @@
-# Batch:
-gcam: True
-
-scam: True
-scam_batch_size: 32
-
-gcampp: True
-
 # Single:
 occlusion: True
 occ_strides: 25
@@ -14,12 +6,12 @@ occ_baselines: 0
 
 lime: True
 lime_alpha: 0.0002
-lime_n_samples: 150
+lime_n_samples: 10
 lime_perturbations_per_eval: 5
 
 kernel_shap: True
 ks_baselines: 0
-ks_n_samples: 100
+ks_n_samples: 10
 ks_perturbations_per_eval: 5
 
 saliency: True
@@ -28,12 +20,19 @@ input_x_gradient: True
 
 guided_backprob: True
 
+gcam: True
+
+scam: True
+scam_batch_size: 64
+
+gcampp: True
+
 ig: True
 ig_baselines: 0
-ig_n_steps: 80
+ig_n_steps: 30
 
 eg: True
-eg_n_samples: 80 # 80
+eg_n_samples: 40 # 80
 eg_stdevs: 0.001 # 0.001
 
 deeplift: True

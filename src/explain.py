@@ -53,7 +53,7 @@ def explain(cfg: DictConfig) -> Tuple[dict, dict]:
 
     log.info(f"Starting Attribution computation over each Model and XAI Method")
     for model in tqdm(
-        (models.model_1, models.model_2, models.model_3),
+        models.models,
         desc=f"Attribution for {cfg.data.modality} Models",
         colour="BLUE",
         position=0,
@@ -61,24 +61,10 @@ def explain(cfg: DictConfig) -> Tuple[dict, dict]:
     ):
 
         xai_methods = XAIMethodsModule(cfg, model, x_batch)
-        attr_single = None
 
-        for x, y in tqdm(
-            zip(x_batch, y_batch),
-            total=x_batch.shape[0],
-            desc=f"{model.__class__.__name__}",
-            colour="CYAN",
-            position=1,
-            leave=True,
-        ):
-            attr = xai_methods.attribute(x.unsqueeze(0), y)
+        attr = xai_methods.attribute(x_batch, y_batch)
 
-            if attr_single is not None:
-                attr_single = np.vstack((attr_single, attr))
-            else:
-                attr_single = attr
-
-        attr_total.append(attr_single)  # obs , XAI, c, w, h
+        attr_total.append(attr)  # obs , XAI, c, w, h
 
     np.savez(
         str(cfg.paths.root_dir)
@@ -90,7 +76,7 @@ def explain(cfg: DictConfig) -> Tuple[dict, dict]:
         + str(attr_total[0].shape[1])
         + "_methods_"
         + cfg.time
-        + "_.npz",
+        + ".npz",
         attr_total[0],
         attr_total[1],
         attr_total[2],

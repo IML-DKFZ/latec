@@ -1,5 +1,6 @@
 import torch
 from modules.components.base_cam import BaseCAM
+import numpy as np
 
 
 class ScoreCAM(BaseCAM):
@@ -15,9 +16,7 @@ class ScoreCAM(BaseCAM):
     def get_cam_weights(self, inputs, target_layer, targets, activations, grads):
         with torch.no_grad():
             upsample = torch.nn.UpsamplingBilinear2d(size=inputs.shape[-2:])
-            activation_tensor = torch.from_numpy(activations)
-            if self.cuda:
-                activation_tensor = activation_tensor.cuda()
+            activation_tensor = torch.from_numpy(activations).to(inputs.device)
 
             upsampled = upsample(activation_tensor)
 
@@ -46,5 +45,5 @@ class ScoreCAM(BaseCAM):
                     scores.extend(outputs)
             scores = torch.Tensor(scores)
             scores = scores.view(activations.shape[0], activations.shape[1])
-            weights = torch.nn.Softmax(dim=-1)(scores).numpy()
+            weights = np.copy(torch.nn.Softmax(dim=-1)(scores).numpy())
             return weights
