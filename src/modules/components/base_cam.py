@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 import ttach as tta
+import cv2
 from typing import Callable, List, Tuple
 from pytorch_grad_cam.activations_and_gradients import ActivationsAndGradients
 from pytorch_grad_cam.utils.svd_on_activations import get_2d_projection
@@ -143,7 +144,15 @@ class BaseCAM:
 
             if self.include_negative == False:
                 cam = np.maximum(cam, 0)
-            scaled = scale_cam_image(cam, target_size)
+
+            result = []
+            for img in cam:  # Removed min max rescaling
+                if target_size is not None:
+                    img = cv2.resize(img, target_size)
+                result.append(img)
+
+            scaled = np.float32(result)
+
             cam_per_target_layer.append(scaled[:, None, :])
 
         return cam_per_target_layer
