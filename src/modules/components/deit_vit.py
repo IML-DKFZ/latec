@@ -100,7 +100,7 @@ class Attention(nn.Module):
         self.num_heads = num_heads
         head_dim = dim // num_heads
         # NOTE scale factor was wrong in my original version, can set manually to be compat with prev weights
-        self.scale = head_dim ** -0.5
+        self.scale = head_dim**-0.5
 
         # A = Q*K^T
         self.matmul1 = einsum("bhid,bhjd->bhij")
@@ -246,8 +246,7 @@ class Block(nn.Module):
 
 
 class PatchEmbed(nn.Module):
-    """ Image to Patch Embedding
-    """
+    """Image to Patch Embedding"""
 
     def __init__(self, img_size=224, patch_size=16, in_chans=3, embed_dim=768):
         super().__init__()
@@ -283,8 +282,7 @@ class PatchEmbed(nn.Module):
 
 
 class VisionTransformer(nn.Module):
-    """ Vision Transformer with support for patch or hybrid CNN input stage
-    """
+    """Vision Transformer with support for patch or hybrid CNN input stage"""
 
     def __init__(
         self,
@@ -476,7 +474,7 @@ class VisionTransformer(nn.Module):
 
 
 def _conv_filter(state_dict, patch_size=16):
-    """ convert patch embedding weight from manual patchify + linear proj to conv"""
+    """convert patch embedding weight from manual patchify + linear proj to conv"""
     out_dict = {}
     for k, v in state_dict.items():
         if "patch_embed.proj.weight" in k:

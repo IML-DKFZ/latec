@@ -1,0 +1,15 @@
+_target_: src.data.oct_datamodule.OCTDataModule
+data_dir: ${paths.data_dir}
+batch_size: 2
+num_workers: 0
+pin_memory: False
+resize: 256
+resize_mode: "bilinear"
+crop: 224
+
+modality: Image
+num_classes: 4
+
+weights_resnet: "data/model_weights/OCT/ResNet50-epoch=7-val_loss=0.01-val_AUROC=1.000.ckpt"
+weights_effnet: "data/model_weights/OCT/EffNetb0-epoch=4-val_loss=0.00-val_AUROC=1.000.ckpt"
+weights_vit: "data/model_weights/OCT/DeiTViT-epoch=5-val_loss=0.00-val_AUROC=1.000.ckpt"
