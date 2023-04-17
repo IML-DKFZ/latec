@@ -44,11 +44,6 @@ class MedMNIST(Dataset):
                 + "Please specify and create the `root` directory manually."
             )
 
-        if not os.path.exists(os.path.join(self.root, "{}.npz".format(self.flag))):
-            raise RuntimeError(
-                "Dataset not found. " + " You can set `download=True` to download it"
-            )
-
         npz_file = np.load(os.path.join(self.root, "{}.npz".format(self.flag)))
 
         self.split = split
@@ -139,7 +134,7 @@ class VesselMNSIT3DDataModule(LightningDataModule):
         self.transforms = Transform3D("0.5")
 
         self.data = VesselMNIST3D(
-            root=self.data_dir,
+            root=self.data_dir + "/VesselMNIST3D/",
             split="test",
             transform=self.transforms,
         )
