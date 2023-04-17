@@ -1,8 +1,6 @@
 import numpy as np
 import torch
 from captum.attr import (
-    FeaturePermutation,
-    FeatureAblation,
     Occlusion,
     Lime,
     KernelShap,
@@ -14,7 +12,7 @@ from captum.attr import (
     DeepLift,
     DeepLiftShap,
 )
-from captum._utils.models.linear_model import SkLearnLinearModel
+from captum._utils.models.linear_model import SGDLasso
 
 from modules.components.lrp import LRP
 from modules.components.score_cam import ScoreCAM
@@ -30,6 +28,23 @@ def reshape_transform(tensor, height=14, width=14):
     # like in CNNs.
     result = result.transpose(2, 3).transpose(1, 2)
     return result
+
+
+def feature_mask():
+    x = np.arange(0, 224 / 16, 1)
+
+    x = np.repeat(x, 16, axis=0)
+
+    row = np.vstack([x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x])
+
+    rows = []
+
+    for i in range(int(224 / 16)):
+        rows.append(row + ((224 / 16) * i))
+
+    mask = np.vstack(rows)
+
+    return torch.from_numpy(mask).type(torch.int64)
 
 
 class XAIMethodsModule:
@@ -73,15 +88,15 @@ class XAIMethodsModule:
             if self.xai_cfg.lime:
                 lime = Lime(
                     model,
-                    interpretable_model=SkLearnLinearModel(
-                        "linear_model.Lasso",
-                        alpha=self.xai_cfg.lime_alpha,  # , n_jobs=-1
+                    interpretable_model=SGDLasso(
+                        # alpha=self.xai_cfg.lime_alpha,  # , n_jobs=-1
                     ),
                 )
                 self.xai_methods.append(lime)
                 lime_hparams = {
                     "n_samples": self.xai_cfg.lime_n_samples,
                     "perturbations_per_eval": self.xai_cfg.lime_perturbations_per_eval,
+                    "feature_mask": feature_mask(),
                 }
                 self.xai_hparams.append(lime_hparams)
             if self.xai_cfg.kernel_shap:
@@ -91,6 +106,7 @@ class XAIMethodsModule:
                     "baselines": self.xai_cfg.ks_baselines,
                     "n_samples": self.xai_cfg.ks_n_samples,
                     "perturbations_per_eval": self.xai_cfg.ks_perturbations_per_eval,
+                    "feature_mask": feature_mask(),
                 }
                 self.xai_hparams.append(ks_hparams)
             if self.xai_cfg.saliency:

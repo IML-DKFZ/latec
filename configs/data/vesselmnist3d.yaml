@@ -1,0 +1,12 @@
+_target_: src.data.vesselmnist3d_datamodule.VesselMNSIT3DDataModule
+data_dir: ${paths.data_dir}
+batch_size: 10
+num_workers: 0
+pin_memory: False
+
+modality: Voxel
+num_classes: 2
+
+weights_3dresnet: "data/model_weights/vesselMNIST3D/3DResNet18-epoch=99-val_F1=0.9062-val_Accuracy=0.9062.ckpt"
+weights_3deffnet: "data/model_weights/vesselMNIST3D/3DEfficientNetB0-epoch=99-val_F1=0.8906-val_Accuracy=0.8906.ckpt"
+weights_s3dformer: "data/model_weights/vesselMNIST3D/Simple3DFormer-epoch=99-val_F1=0.8802-val_Accuracy=0.8802.ckpt"

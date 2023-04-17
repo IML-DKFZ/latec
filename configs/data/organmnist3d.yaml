@@ -1,0 +1,12 @@
+_target_: src.data.organmnist3d_datamodule.OrganMNSIT3DDataModule
+data_dir: ${paths.data_dir}
+batch_size: 10
+num_workers: 0
+pin_memory: False
+
+modality: Voxel
+num_classes: 11
+
+weights_3dresnet: "data/model_weights/organMNIST3D/3DResNet18-epoch=99-val_loss=0.05-val_AUROC=1.000.ckpt"
+weights_3deffnet: "data/model_weights/organMNIST3D/3DEfficientNetB0-epoch=99-val_loss=0.12-val_AUROC=1.000.ckpt"
+weights_s3dformer: "data/model_weights/organMNIST3D/Simple3DFormer-epoch=99-val_F1=0.9187-val_Accuracy=0.9130.ckpt"
