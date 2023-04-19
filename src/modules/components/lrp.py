@@ -24,6 +24,7 @@ from captum.log import log_usage
 from torch import Tensor
 from torch.nn import Module
 from torch.utils.hooks import RemovableHandle
+import efficientnet_pytorch_3d
 
 from modules.components.deit_vit import (
     Conv2d,
@@ -438,10 +439,13 @@ SUPPORTED_LAYERS_WITH_RULES = {
     nn.MaxPool2d: EpsilonRule,
     nn.MaxPool3d: EpsilonRule,
     nn.Conv2d: EpsilonRule,
+    nn.Conv3d: EpsilonRule,
+    torchvision.models.video.resnet.Conv3DSimple: EpsilonRule,
     Conv2d: EpsilonRule,
     LayerNorm: EpsilonRule,
     MaxPool2d: EpsilonRule,
     AdaptiveAvgPool2d: EpsilonRule,
+    nn.AdaptiveAvgPool3d: EpsilonRule,
     AvgPool2d: EpsilonRule,
     IndexSelect: EpsilonRule,
     Cat: EpsilonRule,
@@ -451,15 +455,19 @@ SUPPORTED_LAYERS_WITH_RULES = {
     AddEye: EpsilonRule,
     nn.AvgPool2d: EpsilonRule,
     nn.AdaptiveAvgPool2d: EpsilonRule,
+    nn.ZeroPad2d: EpsilonRule,
     nn.Linear: EpsilonRule,
     nn.BatchNorm2d: EpsilonRule,
+    nn.BatchNorm3d: EpsilonRule,
     nn.Flatten: EpsilonRule,
     nn.LayerNorm: EpsilonRule,
     torchvision.ops.misc.Permute: EpsilonRule,
     nn.modules.linear.NonDynamicallyQuantizableLinear: EpsilonRule,
     torchvision.models.convnext.LayerNorm2d: EpsilonRule,
     nn.modules.linear.Identity: EpsilonRule,
+    efficientnet_pytorch_3d.utils.Identity: EpsilonRule,
     Addition_Module: EpsilonRule,
+    efficientnet_pytorch_3d.utils.MemoryEfficientSwish: EpsilonRule,
 }
 
 SUPPORTED_NON_LINEAR_LAYERS = [

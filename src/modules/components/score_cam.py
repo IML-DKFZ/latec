@@ -15,10 +15,11 @@ class ScoreCAM(BaseCAM):
 
     def get_cam_weights(self, inputs, target_layer, targets, activations, grads):
         with torch.no_grad():
-            upsample = torch.nn.UpsamplingBilinear2d(size=inputs.shape[-2:])
             activation_tensor = torch.from_numpy(activations).to(inputs.device)
 
-            upsampled = upsample(activation_tensor)
+            upsampled = torch.nn.functional.interpolate(
+                activation_tensor, size=inputs.shape[2:], mode="nearest"
+            )
 
             maxs = upsampled.view(upsampled.size(0), upsampled.size(1), -1).max(dim=-1)[
                 0
@@ -27,7 +28,11 @@ class ScoreCAM(BaseCAM):
                 0
             ]
 
-            maxs, mins = maxs[:, :, None, None], mins[:, :, None, None]
+            if len(inputs.shape[2:]) == 2:
+                maxs, mins = maxs[:, :, None, None], mins[:, :, None, None]
+            else:
+                maxs, mins = maxs[:, :, None, None, None], mins[:, :, None, None, None]
+
             upsampled = (upsampled - mins) / ((maxs - mins) + 1e-7)
 
             input_tensors = inputs[:, None, :, :] * upsampled[:, :, None, :, :]

@@ -24,7 +24,7 @@ class GradCAMPlusPlus(BaseCAM):
     def get_cam_weights(
         self, inputs, target_layers, target_category, activations, grads
     ):
-        grads_power_2 = grads ** 2
+        grads_power_2 = grads**2
         grads_power_3 = grads_power_2 * grads
         # Equation 19 in https://arxiv.org/abs/1710.11063
         sum_activations = np.sum(activations, axis=(2, 3))
@@ -37,5 +37,8 @@ class GradCAMPlusPlus(BaseCAM):
         aij = np.where(grads != 0, aij, 0)
 
         weights = np.maximum(grads, 0) * aij
-        weights = np.sum(weights, axis=(2, 3))
-        return weights
+
+        if len(activations.shape[2:]) == 2:
+            return np.sum(weights, axis=(2, 3))
+        else:
+            return np.sum(weights, axis=(2, 3, 4))

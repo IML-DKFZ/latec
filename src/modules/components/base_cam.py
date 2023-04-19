@@ -56,11 +56,15 @@ class BaseCAM:
         grads: torch.Tensor,
         eigen_smooth: bool = False,
     ) -> np.ndarray:
-
         weights = self.get_cam_weights(
             inputs, target_layer, targets, activations, grads
         )
-        weighted_activations = weights[:, :, None, None] * activations
+
+        if len(activations.shape[2:]) == 2:
+            weighted_activations = weights[:, :, None, None] * activations
+        else:
+            weighted_activations = weights[:, :, None, None, None] * activations
+
         if eigen_smooth:
             cam = get_2d_projection(weighted_activations)
         else:
@@ -73,7 +77,6 @@ class BaseCAM:
         target: List[torch.nn.Module],
         eigen_smooth: bool = False,
     ) -> np.ndarray:
-
         if self.cuda:
             inputs = inputs.cuda()
 
@@ -105,11 +108,17 @@ class BaseCAM:
         # or something else.
         cam_per_layer = self.compute_cam_per_layer(inputs, target, eigen_smooth)
         output = self.aggregate_multi_layers(cam_per_layer)
-        return np.repeat(np.expand_dims(output, 1), 3, axis=1)
+
+        if len(inputs.shape[2:]) == 2:
+            return np.repeat(np.expand_dims(output, 1), 3, axis=1)
+        else:
+            return np.expand_dims(output, 1)
 
     def get_target_width_height(self, inputs: torch.Tensor) -> Tuple[int, int]:
-        width, height = inputs.size(-1), inputs.size(-2)
-        return width, height
+        if len(inputs.shape[2:]) == 2:
+            return inputs.size(-1), inputs.size(-2)
+        else:
+            return inputs.size(-1), inputs.size(-2), inputs.size(-3)
 
     def compute_cam_per_layer(
         self, inputs: torch.Tensor, targets: List[torch.nn.Module], eigen_smooth: bool
@@ -148,7 +157,15 @@ class BaseCAM:
             result = []
             for img in cam:  # Removed min max rescaling
                 if target_size is not None:
-                    img = cv2.resize(img, target_size)
+                    if len(target_size) == 2:
+                        img = cv2.resize(img, target_size)
+                    else:
+                        img = torch.nn.functional.interpolate(
+                            torch.Tensor(img).unsqueeze(0).unsqueeze(0),
+                            size=target_size,
+                            mode="nearest",
+                        )
+                        img = img.squeeze().numpy()
                 result.append(img)
 
             scaled = np.float32(result)
@@ -197,7 +214,6 @@ class BaseCAM:
         aug_smooth: bool = False,
         eigen_smooth: bool = False,
     ) -> np.ndarray:
-
         # Smooth the CAM result with test time augmentation
         if aug_smooth is True:
             return self.forward_augmentation_smoothing(inputs, targets, eigen_smooth)

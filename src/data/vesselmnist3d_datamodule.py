@@ -134,7 +134,7 @@ class VesselMNSIT3DDataModule(LightningDataModule):
         self.transforms = Transform3D("0.5")
 
         self.data = VesselMNIST3D(
-            root=self.data_dir + "/VesselMNIST3D/",
+            root=data_dir + "/VesselMNIST3D/",
             split="test",
             transform=self.transforms,
         )

@@ -22,6 +22,11 @@ def load_from_lightning(model, model_filepath):
         for k, v in pretrained_dict.items()
     }
 
+    pretrained_dict = {
+        k.replace("patch_embed.proj.conv3d_1.", "patch_embed.proj."): v
+        for k, v in pretrained_dict.items()
+    }
+
     model.load_state_dict(pretrained_dict)
 
     del pretrained_dict
@@ -91,12 +96,8 @@ class ModelsModule:
             self.models.append(model_2)
 
             #### Simple3DFormer ####
-            model_3 = deit_small_patch16_224(pretrained=False)
-
-            model_3.head = nn.Linear(
-                in_features=model_3.embed_dim,
-                out_features=cfg.data.num_classes,
-                bias=True,
+            model_3 = deit_small_patch16_224(
+                num_classes=cfg.data.num_classes, pretrained=False
             )
 
             # replace patch_embed layer

@@ -281,6 +281,51 @@ class PatchEmbed(nn.Module):
         return self.proj.relprop(cam, **kwargs)
 
 
+class VoxelEmbed(nn.Module):
+    """Voxel to Patch Embedding (Simplest 3D CNN)"""
+
+    def __init__(
+        self, voxel_size=128, cell_size=16, patch_size=8, in_chans=1, embed_dim=768
+    ):
+        super().__init__()
+        self.voxel_size = (voxel_size, voxel_size, voxel_size)
+        self.cell_size = (cell_size, cell_size, cell_size)
+        self.patch_size = patch_size
+        num_patches = patch_size**3  # 2
+        self.num_patches = num_patches
+        self.embed_dim = embed_dim
+
+        self.proj = Conv3d(
+            in_channels=in_chans,
+            out_channels=embed_dim,
+            kernel_size=cell_size,
+            stride=cell_size,
+        )
+
+    def forward(self, x):
+        B, C, H, W, V = x.shape
+        # FIXME look at relaxing size constraints
+        assert (
+            H == self.voxel_size[0]
+            and W == self.voxel_size[1]
+            and V == self.voxel_size[2]
+        ), f"Input voxel size ({H}*{W}*{V}) doesn't match model ({self.voxel_size[0]}*{self.voxel_size[1]}*{self.voxel_size[2]})."
+        x = self.proj(x).flatten(2).transpose(1, 2)
+        # x = torch.mean(self.proj(x), dim=4).flatten(2).transpose(1, 2)
+        return x
+
+    def relprop(self, cam, **kwargs):
+        cam = cam.transpose(1, 2)
+        cam = cam.reshape(
+            cam.shape[0],
+            cam.shape[1],
+            self.patch_size,
+            self.patch_size,
+            self.patch_size,
+        )
+        return self.proj.relprop(cam, **kwargs)
+
+
 class VisionTransformer(nn.Module):
     """Vision Transformer with support for patch or hybrid CNN input stage"""
 
@@ -964,6 +1009,49 @@ class Conv2d(nn.Conv2d, RelProp):
         return R
 
 
+class Conv3d(nn.Conv3d, RelProp):
+    def gradprop2(self, DY, weight):
+        Z = self.forward(self.X)
+
+        output_padding = self.X.size()[2] - (
+            (Z.size()[2] - 1) * self.stride[0]
+            - 2 * self.padding[0]
+            + self.kernel_size[0]
+        )
+
+        return F.conv_transpose2d(
+            DY,
+            weight,
+            stride=self.stride,
+            padding=self.padding,
+            output_padding=output_padding,
+        )
+
+    def relprop(self, R, alpha):
+        beta = alpha - 1
+        pw = torch.clamp(self.weight, min=0)
+        nw = torch.clamp(self.weight, max=0)
+        px = torch.clamp(self.X, min=0)
+        nx = torch.clamp(self.X, max=0)
+
+        def f(w1, w2, x1, x2):
+            Z1 = F.conv3d(x1, w1, bias=None, stride=self.stride, padding=self.padding)
+            Z2 = F.conv3d(x2, w2, bias=None, stride=self.stride, padding=self.padding)
+            S1 = safe_divide(R, Z1)
+            S2 = safe_divide(R, Z2)
+            C1 = (
+                x1 * self.gradprop(Z1, x1, S1)[0]
+            )  # TODO Check if this makes qualitative sense! -> 2D Transposed Conv not 3D, but only 2D works.
+            C2 = x2 * self.gradprop(Z2, x2, S2)[0]
+            return C1 + C2
+
+        activator_relevances = f(pw, nw, px, nx)
+        inhibitor_relevances = f(nw, pw, px, nx)
+
+        R = alpha * activator_relevances - beta * inhibitor_relevances
+        return R
+
+
 def _no_grad_trunc_normal_(tensor, mean, std, a, b):
     # Cut & paste from PyTorch official master until it's in a few official releases - RW
     # Method based on https://people.sc.fsu.edu/~jburkardt/presentations/truncated_normal.pdf
@@ -1044,62 +1132,3 @@ to_2tuple = _ntuple(2)
 to_3tuple = _ntuple(3)
 to_4tuple = _ntuple(4)
 to_ntuple = _ntuple
-
-
-class VoxelEmbed(nn.Module):
-    """Voxel to Patch Embedding (Simplest 3D CNN)"""
-
-    def __init__(
-        self, voxel_size=128, cell_size=16, patch_size=8, in_chans=1, embed_dim=768
-    ):
-        super().__init__()
-        self.voxel_size = (voxel_size, voxel_size, voxel_size)
-        self.cell_size = (cell_size, cell_size, cell_size)
-        self.patch_size = patch_size
-        num_patches = patch_size**3  # 2
-        self.num_patches = num_patches
-        self.embed_dim = embed_dim
-
-        self.proj = torch.nn.Sequential(
-            OrderedDict(
-                [
-                    (
-                        "conv3d_1",
-                        torch.nn.Conv3d(
-                            in_channels=in_chans,
-                            out_channels=embed_dim,
-                            kernel_size=cell_size,
-                            stride=cell_size,
-                        ),
-                    ),
-                    # ('relu1', torch.nn.ReLU()),
-                    # ('pool1', torch.nn.MaxPool3d(2)),
-                    # ('conv3d_2', torch.nn.Conv3d(in_channels=32, out_channels=embed_dim, kernel_size=3))
-                ]
-            )
-        )
-        # [batch_size, embed_dim, 14, 14, 14]
-        # x = self.proj(torch.autograd.Variable(torch.rand((1, 1) + self.voxel_size)))
-        # print(x.shape)
-
-    def forward(self, x):
-        B, C, H, W, V = x.shape
-        # FIXME look at relaxing size constraints
-        assert (
-            H == self.voxel_size[0]
-            and W == self.voxel_size[1]
-            and V == self.voxel_size[2]
-        ), f"Input voxel size ({H}*{W}*{V}) doesn't match model ({self.voxel_size[0]}*{self.voxel_size[1]}*{self.voxel_size[2]})."
-        x = self.proj(x).flatten(2).transpose(1, 2)
-        # x = torch.mean(self.proj(x), dim=4).flatten(2).transpose(1, 2)
-        return x
-
-    def relprop(self, cam, **kwargs):
-        cam = cam.transpose(1, 2)
-        cam = cam.reshape(
-            cam.shape[0],
-            cam.shape[1],
-            (self.img_size[0] // self.patch_size[0]),
-            (self.img_size[1] // self.patch_size[1]),
-        )
-        return self.proj.relprop(cam, **kwargs)

@@ -22,4 +22,7 @@ class GradCAM(BaseCAM):
     def get_cam_weights(
         self, inputs, target_layer, target_category, activations, grads
     ):
-        return np.mean(grads, axis=(2, 3))
+        if len(activations.shape[2:]) == 2:
+            return np.mean(grads, axis=(2, 3))
+        else:
+            return np.mean(grads, axis=(2, 3, 4))

@@ -132,7 +132,7 @@ class OrganMNSIT3DDataModule(LightningDataModule):
         self.transforms = Transform3D()
 
         self.data = OrganMNIST3D(
-            root=self.data_dir + "/OrganMNIST3D/",
+            root=data_dir + "/OrganMNIST3D/",
             split="test",
             transform=self.transforms,
         )

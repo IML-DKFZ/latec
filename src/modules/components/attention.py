@@ -26,7 +26,17 @@ from numpy import *
 #     return joint_attention
 
 
-def rescale_attention(tensor, height=14, width=14):
+def rescale_attention_3D(tensor, height=7, width=7, z=7, scale_factor=4, dim=28):
+    atten = tensor.reshape(1, 1, height, width, z)
+    atten = torch.nn.functional.interpolate(
+        atten, scale_factor=scale_factor, mode="trilinear"
+    )
+    atten = atten.reshape(1, dim, dim, dim).detach().cpu().numpy()
+    atten = (atten - atten.min()) / (atten.max() - atten.min())
+    return atten
+
+
+def rescale_attention_2D(tensor, height=14, width=14):
     atten = tensor.reshape(1, 1, height, width)
     atten = torch.nn.functional.interpolate(atten, scale_factor=16, mode="bilinear")
     atten = atten.reshape(224, 224).detach().cpu().numpy()
@@ -35,9 +45,10 @@ def rescale_attention(tensor, height=14, width=14):
 
 
 class AttentionLRP:
-    def __init__(self, model):
+    def __init__(self, model, modality):
         self.model = model
         self.model.eval()
+        self.modality = modality
 
     def attribute(
         self,
@@ -73,13 +84,19 @@ class AttentionLRP:
             )
 
             if method != "full":
-                atten = np.repeat(
-                    np.expand_dims(rescale_attention(atten), (0, 1)), 3, axis=1
-                ).squeeze()
+                if self.modality == "Image":
+                    atten = np.repeat(
+                        np.expand_dims(rescale_attention_2D(atten), (0, 1)), 3, axis=1
+                    ).squeeze()
+                elif self.modality == "Voxel":
+                    atten = rescale_attention_3D(atten)
             else:
-                atten = np.repeat(
-                    np.expand_dims(atten.detach().cpu().numpy(), 1), 3, axis=1
-                ).squeeze()
+                if self.modality == "Image":
+                    atten = np.repeat(
+                        np.expand_dims(atten.detach().cpu().numpy(), 1), 3, axis=1
+                    ).squeeze()
+                elif self.modality == "Voxel":
+                    atten = atten.detach().cpu().numpy()
 
             list.append(atten)
 
