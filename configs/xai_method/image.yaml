@@ -23,7 +23,7 @@ guided_backprob: True
 gcam: True
 
 scam: True
-scam_batch_size: 64
+scam_batch_size: 32
 
 gcampp: True
 

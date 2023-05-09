@@ -48,7 +48,6 @@ class InsertionDeletion(BaseEvaluation):
         a_batch_f = torch.tensor(a_batch)
 
         for i in range(x_batch.shape[0]):
-
             x_batch = x_batch_f[i, :]
             y_batch = y_batch_f[i]
             a_batch = a_batch_f[i, :]
@@ -81,7 +80,7 @@ class InsertionDeletion(BaseEvaluation):
         return np.array(insertion_auc_total), np.array(deletion_auc_total)
 
     def _procedure_perturb(self, perturber, num_pixels, indices, target):
-        """ # TODO to add docs
+        """# TODO to add docs
         Args:
             perturber (PixelPerturber):
             num_pixels (int):
@@ -114,7 +113,11 @@ class InsertionDeletion(BaseEvaluation):
             # get score after perturb
             device = next(self.classifier.parameters()).device
             perturbed_inputs = torch.stack(perturbed_inputs)
-            logits = self.classifier(perturbed_inputs.to(device))
+
+            if perturbed_inputs.shape[1] <= 3:
+                logits = self.classifier(perturbed_inputs.to(device))
+            else:
+                logits = self.classifier(perturbed_inputs.unsqueeze(1).to(device))
             score_after = torch.softmax(logits, dim=-1)[:, target]
             scores_after_perturb = np.concatenate(
                 (scores_after_perturb, score_after.detach().cpu().numpy())
@@ -124,11 +127,11 @@ class InsertionDeletion(BaseEvaluation):
 
 class Perturber:
     def perturb(self, r: int, c: int):
-        """ perturb a tile or pixel """
+        """perturb a tile or pixel"""
         raise NotImplementedError
 
     def get_current(self) -> np.ndarray:
-        """ get current img with some perturbations """
+        """get current img with some perturbations"""
         raise NotImplementedError
 
     def get_idxes(self, hmap: np.ndarray, reverse=False) -> list:
@@ -139,7 +142,7 @@ class Perturber:
         raise NotImplementedError
 
     def get_grid_shape(self) -> tuple:
-        """ return the shape of the grid, i.e. the max r, c values """
+        """return the shape of the grid, i.e. the max r, c values"""
         raise NotImplementedError
 
 

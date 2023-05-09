@@ -75,7 +75,6 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
         position=0,
         leave=True,
     ):
-
         eval_scores_model = []
 
         model = model.to(cfg.eval_method.device)
@@ -88,7 +87,6 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
             position=1,
             leave=True,
         ):
-
             eval_methods = EvalModule(cfg, model)
 
             xai_methods = XAIMethodsModule(
@@ -99,9 +97,11 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
 
             results = eval_methods.evaluate(
                 model,
-                x_batch.cpu().numpy(),
+                x_batch.cpu().numpy()
+                if cfg.data.modality == "Image"
+                else x_batch.squeeze().cpu().numpy(),
                 y_batch.cpu().numpy(),
-                a_batch,
+                a_batch if cfg.data.modality == "Image" else a_batch.squeeze(),
                 xai_methods,
                 count_xai,
             )
@@ -128,7 +128,6 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
 
 @hydra.main(version_base="1.3", config_path="../configs", config_name="eval.yaml")
 def main(cfg: DictConfig) -> Optional[float]:
-
     # eval the xai
     eval(cfg)
 

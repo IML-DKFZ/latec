@@ -2,10 +2,10 @@
 
 defaults:
   - _self_
-  - data: organmnist3d.yaml # choose datamodule with `test_dataloader()` for evaluation
+  - data: imagenet.yaml # choose datamodule with `test_dataloader()` for evaluation
   - logger: null
   - paths: default.yaml
-  - xai_method: voxel.yaml
+  - xai_method: image.yaml
   - extras: default.yaml
   - hydra: default.yaml
 

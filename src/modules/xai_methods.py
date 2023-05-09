@@ -2,7 +2,6 @@ import numpy as np
 import torch
 from captum.attr import (
     Occlusion,
-    Lime,
     KernelShap,
     Saliency,
     InputXGradient,
@@ -11,10 +10,11 @@ from captum.attr import (
     GradientShap,
     DeepLift,
     DeepLiftShap,
+    Lime,
+    LRP,
 )
-from captum._utils.models.linear_model import SGDLasso
+from captum._utils.models.linear_model.model import SGDLasso
 
-from modules.components.lrp import LRP
 from modules.components.score_cam import ScoreCAM
 from modules.components.grad_cam import GradCAM
 from modules.components.grad_cam_plusplus import GradCAMPlusPlus
@@ -66,7 +66,15 @@ def feature_mask(modality="Image"):
         for i in range(int(28 / 7)):
             rows.append(row + ((28 / 7) * i))
 
-        mask = np.vstack(rows)
+        slice = np.vstack(rows)
+
+        slice = np.repeat(np.expand_dims(slice, -1), 7, axis=-1)
+
+        slices = []
+        for i in range(int(28 / 7)):
+            slices.append(slice + (16 * i))
+
+        mask = np.concatenate(slices, axis=-1)
 
     return torch.from_numpy(mask).type(torch.int64)
 
@@ -95,11 +103,11 @@ class XAIMethodsModule:
             )
             include_negative = True
         elif model.__class__.__name__ == "EfficientNet3D":
-            layer = [model._conv_head]
+            layer = [model._blocks[-1]]
             reshap = None
             include_negative = False
         elif model.__class__.__name__ == "VideoResNet":
-            layer = [model.layer4[-1]]
+            layer = [model.layer4]
             reshap = None
             include_negative = False
 
@@ -130,9 +138,7 @@ class XAIMethodsModule:
         if self.xai_cfg.lime:
             lime = Lime(
                 model,
-                interpretable_model=SGDLasso(
-                    # alpha=self.xai_cfg.lime_alpha,  # , n_jobs=-1
-                ),
+                interpretable_model=SGDLasso(),
             )
             self.xai_methods.append(lime)
             lime_hparams = {
