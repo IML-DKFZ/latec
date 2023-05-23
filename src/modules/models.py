@@ -10,6 +10,10 @@ from efficientnet_pytorch_3d import EfficientNet3D
 from torchvision.models.video import r3d_18
 from timm.models.layers import trunc_normal_
 
+from modules.components.pointnet import PointNet, PointNet2
+from modules.components.dgcnn import DGCNN
+from modules.components.pc_transformer import PCT
+
 
 def load_from_lightning(model, model_filepath):
     # load the checkpoint
@@ -117,6 +121,22 @@ class ModelsModule:
 
             load_from_lightning(model_3, cfg.data.weights_s3dformer)
             self.models.append(model_3)
+
+        if modality == "Point_Cloud":
+            #### PointNet(++) ####
+            model_1 = PointNet(classes=cfg.data.num_classes)
+            load_from_lightning(model_1, cfg.data.weights_pointnet)
+            self.models.append(model_1)
+
+            #### DGCNN ####
+            # model_2 = DGCNN(output_channels=cfg.data.num_classes)
+            # load_from_lightning(model_2, cfg.data.weights_dgcnn)
+            # self.models.append(model_2)
+
+            #### PCT ####
+            # model_3 = PCT(output_channels=cfg.data.num_classes)
+            # load_from_lightning(model_3, cfg.data.weights_pct)
+            # self.models.append(model_3)
 
         for model in self.models:
             model.eval()

@@ -62,6 +62,8 @@ class BaseCAM:
 
         if len(activations.shape[2:]) == 2:
             weighted_activations = weights[:, :, None, None] * activations
+        elif len(activations.shape[2:]) == 1:
+            weighted_activations = weights[:, :, None] * activations
         else:
             weighted_activations = weights[:, :, None, None, None] * activations
 
@@ -109,7 +111,7 @@ class BaseCAM:
         cam_per_layer = self.compute_cam_per_layer(inputs, target, eigen_smooth)
         output = self.aggregate_multi_layers(cam_per_layer)
 
-        if len(inputs.shape[2:]) == 2:
+        if len(inputs.shape[2:]) == 2 or len(inputs.shape[2:]) == 1:
             return np.repeat(np.expand_dims(output, 1), 3, axis=1)
         else:
             return np.expand_dims(output, 1)
@@ -117,6 +119,8 @@ class BaseCAM:
     def get_target_width_height(self, inputs: torch.Tensor) -> Tuple[int, int]:
         if len(inputs.shape[2:]) == 2:
             return inputs.size(-1), inputs.size(-2)
+        elif len(inputs.shape[2:]) == 1:
+            return (inputs.size(-1),)
         else:
             return inputs.size(-1), inputs.size(-2), inputs.size(-3)
 

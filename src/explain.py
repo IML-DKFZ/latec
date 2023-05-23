@@ -59,7 +59,6 @@ def explain(cfg: DictConfig) -> Tuple[dict, dict]:
         position=0,
         leave=True,
     ):
-
         xai_methods = XAIMethodsModule(cfg, model, x_batch)
 
         attr = xai_methods.attribute(x_batch, y_batch)
@@ -78,14 +77,13 @@ def explain(cfg: DictConfig) -> Tuple[dict, dict]:
         + cfg.time
         + ".npz",
         attr_total[0],
-        attr_total[1],
-        attr_total[2],
+        # attr_total[1],
+        # attr_total[2],
     )
 
 
 @hydra.main(version_base="1.3", config_path="../configs", config_name="explain.yaml")
 def main(cfg: DictConfig) -> Optional[float]:
-
     # explain the model
     explain(cfg)
 

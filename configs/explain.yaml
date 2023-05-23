@@ -2,10 +2,10 @@
 
 defaults:
   - _self_
-  - data: imagenet.yaml # choose datamodule with `test_dataloader()` for evaluation
+  - data: modelnet40.yaml # choose datamodule with `test_dataloader()` for evaluation
   - logger: null
   - paths: default.yaml
-  - xai_method: image.yaml
+  - xai_method: point_cloud.yaml
   - extras: default.yaml
   - hydra: default.yaml
 

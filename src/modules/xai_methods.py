@@ -54,7 +54,9 @@ def feature_mask(modality="Image"):
 
         mask = np.vstack(rows)
 
-    elif modality == "Voxel":  # TODO Atm we mask over y and z dimension not x and y
+        return torch.from_numpy(mask).type(torch.int64)
+
+    elif modality == "Voxel":
         x = np.arange(0, 28 / 7, 1)
 
         x = np.repeat(x, 7, axis=0)
@@ -76,7 +78,10 @@ def feature_mask(modality="Image"):
 
         mask = np.concatenate(slices, axis=-1)
 
-    return torch.from_numpy(mask).type(torch.int64)
+        return torch.from_numpy(mask).type(torch.int64)
+
+    elif modality == "Point_Cloud":
+        return None
 
 
 class XAIMethodsModule:
@@ -110,6 +115,18 @@ class XAIMethodsModule:
             layer = [model.layer4]
             reshap = None
             include_negative = False
+        elif model.__class__.__name__ == "PointNet":
+            layer = [model.transform.bn1]
+            reshap = None
+            include_negative = False
+        elif model.__class__.__name__ == "DGCNN":
+            layer = [model.conv5]
+            reshap = None
+            include_negative = False
+        elif model.__class__.__name__ == "PCT":
+            layer = [model.pt_last.sa4.after_norm]
+            reshap = reshape_transform_2D
+            include_negative = True
 
         self.xai_methods = []
         self.xai_hparams = []
@@ -126,10 +143,17 @@ class XAIMethodsModule:
                 )
                 if self.modality == "Image"
                 else (
-                    1,
-                    self.xai_cfg.occ_sliding_window_shapes,
-                    self.xai_cfg.occ_sliding_window_shapes,
-                    self.xai_cfg.occ_sliding_window_shapes,
+                    (
+                        1,
+                        self.xai_cfg.occ_sliding_window_shapes,
+                        self.xai_cfg.occ_sliding_window_shapes,
+                        self.xai_cfg.occ_sliding_window_shapes,
+                    )
+                    if self.modality == "Voxel"
+                    else (
+                        1,
+                        self.xai_cfg.occ_sliding_window_shapes,
+                    )
                 ),
                 "baselines": self.xai_cfg.occ_baselines,
             }
@@ -227,7 +251,10 @@ class XAIMethodsModule:
             self.xai_hparams.append(dlshap_hparams)
 
         if self.xai_cfg.lrp or self.xai_cfg.attention:
-            if model.__class__.__name__ == "VisionTransformer":
+            if (
+                model.__class__.__name__ == "VisionTransformer"
+                or model.__class__.__name__ == "PCT"
+            ):
                 lrp = AttentionLRP(model, modality=self.modality)
                 self.xai_methods.append(lrp)
                 lrp_hparams = {"method": "full"}

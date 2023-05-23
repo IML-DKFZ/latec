@@ -30,12 +30,17 @@ class ScoreCAM(BaseCAM):
 
             if len(inputs.shape[2:]) == 2:
                 maxs, mins = maxs[:, :, None, None], mins[:, :, None, None]
+            elif len(inputs.shape[2:]) == 1:
+                maxs, mins = maxs[:, :, None], mins[:, :, None]
             else:
                 maxs, mins = maxs[:, :, None, None, None], mins[:, :, None, None, None]
 
             upsampled = (upsampled - mins) / ((maxs - mins) + 1e-7)
 
-            input_tensors = inputs[:, None, :, :] * upsampled[:, :, None, :, :]
+            if len(inputs.shape[2:]) == 1:
+                input_tensors = inputs[:, None, :] * upsampled[:, :, None, :]
+            else:
+                input_tensors = inputs[:, None, :, :] * upsampled[:, :, None, :, :]
 
             if hasattr(self, "batch_size"):
                 BATCH_SIZE = self.batch_size

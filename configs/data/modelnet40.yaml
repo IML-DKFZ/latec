@@ -1,0 +1,12 @@
+_target_: src.data.modelnet40_datamodule.ModelNet40DataModule
+data_dir: ${paths.data_dir}
+batch_size: 10
+num_workers: 0
+pin_memory: False
+
+modality: Point_Cloud
+num_classes: 40
+
+weights_pointnet: "data/model_weights/ModelNet40/PointNet-epoch=199.ckpt" # PointNet2-epoch=199.ckpt
+weights_dgcnn: "data/model_weights/ModelNet40/DGCNN-epoch=249.ckpt"
+weights_pct: "data/model_weights/ModelNet40/PCT-epoch=249.ckpt"

@@ -24,5 +24,7 @@ class GradCAM(BaseCAM):
     ):
         if len(activations.shape[2:]) == 2:
             return np.mean(grads, axis=(2, 3))
+        elif len(activations.shape[2:]) == 1:
+            return np.mean(grads, axis=2)
         else:
             return np.mean(grads, axis=(2, 3, 4))

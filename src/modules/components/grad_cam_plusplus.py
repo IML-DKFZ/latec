@@ -27,11 +27,18 @@ class GradCAMPlusPlus(BaseCAM):
         grads_power_2 = grads**2
         grads_power_3 = grads_power_2 * grads
         # Equation 19 in https://arxiv.org/abs/1710.11063
-        sum_activations = np.sum(activations, axis=(2, 3))
+        if len(activations.shape[2:]) == 1:
+            sum_activations = np.sum(activations, axis=2)
+        else:
+            sum_activations = np.sum(activations, axis=(2, 3))
+
+        if len(activations.shape[2:]) == 1:
+            sel = sum_activations[:, :, None]
+        else:
+            sel = sum_activations[:, :, None, None]
+
         eps = 0.000001
-        aij = grads_power_2 / (
-            2 * grads_power_2 + sum_activations[:, :, None, None] * grads_power_3 + eps
-        )
+        aij = grads_power_2 / (2 * grads_power_2 + sel * grads_power_3 + eps)
         # Now bring back the ReLU from eq.7 in the paper,
         # And zero out aijs where the activations are 0
         aij = np.where(grads != 0, aij, 0)
@@ -40,5 +47,7 @@ class GradCAMPlusPlus(BaseCAM):
 
         if len(activations.shape[2:]) == 2:
             return np.sum(weights, axis=(2, 3))
+        elif len(activations.shape[2:]) == 1:
+            return np.sum(weights, axis=2)
         else:
             return np.sum(weights, axis=(2, 3, 4))
