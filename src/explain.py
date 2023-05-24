@@ -77,8 +77,8 @@ def explain(cfg: DictConfig) -> Tuple[dict, dict]:
         + cfg.time
         + ".npz",
         attr_total[0],
-        # attr_total[1],
-        # attr_total[2],
+        attr_total[1],
+        attr_total[2],
     )
 
 

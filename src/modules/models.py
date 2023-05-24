@@ -124,9 +124,9 @@ class ModelsModule:
 
         if modality == "Point_Cloud":
             #### PointNet(++) ####
-            model_1 = PointNet(classes=cfg.data.num_classes)
-            load_from_lightning(model_1, cfg.data.weights_pointnet)
-            self.models.append(model_1)
+            # model_1 = PointNet(classes=cfg.data.num_classes)
+            # load_from_lightning(model_1, cfg.data.weights_pointnet)
+            # self.models.append(model_1)
 
             #### DGCNN ####
             # model_2 = DGCNN(output_channels=cfg.data.num_classes)
@@ -134,9 +134,9 @@ class ModelsModule:
             # self.models.append(model_2)
 
             #### PCT ####
-            # model_3 = PCT(output_channels=cfg.data.num_classes)
-            # load_from_lightning(model_3, cfg.data.weights_pct)
-            # self.models.append(model_3)
+            model_3 = PCT(output_channels=cfg.data.num_classes)
+            load_from_lightning(model_3, cfg.data.weights_pct)
+            self.models.append(model_3)
 
         for model in self.models:
             model.eval()

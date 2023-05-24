@@ -1,8 +1,10 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch_geometric.nn.unpool import knn_interpolate
 
 # From: https://github.com/Strawberry-Eat-Mango/PCT_Pytorch
+
 
 def compute_rollout_attention(all_layer_matrices, start_layer=0):
     # adding residual consideration
@@ -58,7 +60,7 @@ def fps(xyz, M):
     for i in range(M):
         centroids[:, i] = inds
         cur_point = xyz[batchlists, inds, :]  # (B, 3)
-        cur_dist = torch.squeeze(get_dists(torch.unsqueeze(cur_point, 1), xyz))
+        cur_dist = torch.squeeze(get_dists(torch.unsqueeze(cur_point, 1), xyz), dim=1)
         dists[cur_dist < dists] = cur_dist[cur_dist < dists]
         inds = torch.max(dists, dim=1)[1]
     return centroids
@@ -172,29 +174,30 @@ class Local_op(nn.Module):
 
     def forward(self, x):
         b, n, s, d = x.size()  # torch.Size([32, 512, 32, 6])
-        x = x.permute(0, 1, 3, 2) # torch.Size([32, 512, 6, 32])
-        x = x.reshape(-1, d, s) # torch.Size([32 * 512 = 16,386, 6, 32])
+        x = x.permute(0, 1, 3, 2)
+        self.x_size_1 = x.size()
+        x = x.reshape(-1, d, s)
         batch_size, _, N = x.size()
         x = self.act1(self.bn1(self.conv1(x)))  # B, D, N
         x = self.act2(self.bn2(self.conv2(x)))  # B, D, N
-        x =  self.pool(x).view(batch_size, -1)
-        x = x.reshape(b, n, -1).permute(0, 2, 1)
+        x = self.pool(x)
+        self.x_size_2 = x.size()
+        x = x.view(batch_size, -1).reshape(b, n, -1).permute(0, 2, 1)
         return x
-    
+
     def relprop(self, cam, **kwargs):
         cam = cam.permute(0, 2, 1)
-        cam = cam.reshape() #TODO
-        cam = cam.view() # TODO
-        cam = self.pool.relprop(cam)
+        cam = cam.reshape(self.x_size_2)
+        cam = self.pool.relprop(cam, **kwargs)
 
-        cam = self.act2.relprop(cam)
-        cam = self.bn2.relprop(cam)
-        cam = self.conv2.relprop(cam)
-        cam = self.act1.relprop(cam)
-        cam = self.bn1.relprop(cam)
-        cam = self.conv1.relprop(cam)
+        cam = self.act2.relprop(cam, **kwargs)
+        cam = self.bn2.relprop(cam, **kwargs)
+        cam = self.conv2.relprop(cam, **kwargs)
+        cam = self.act1.relprop(cam, **kwargs)
+        cam = self.bn1.relprop(cam, **kwargs)
+        cam = self.conv1.relprop(cam, **kwargs)
 
-        cam = cam.reshape(32, 512, 6, 32)
+        cam = cam.reshape(self.x_size_1)
         cam = cam.permute(0, 1, 3, 2)
 
         return cam
@@ -234,29 +237,34 @@ class PCT(nn.Module):
         self.dp2 = Dropout(p=0.5)
         self.linear3 = Linear(256, output_channels)
 
-    def forward(self, x):
-        xyz = x.permute(0, 2, 1)
-        batch_size, _, _ = x.size()
+    def forward(self, x):  # b,3,1024
+        self.orig_xyz = x
+        xyz = x.permute(0, 2, 1)  # b,1024,3
+        self.batch_size, _, _ = x.size()
         # B, D, N
-        x = self.act1(self.bn1(self.conv1(x)))
+        x = self.act1(self.bn1(self.conv1(x)))  # b,64,1024
         # B, D, N
-        x = self.act2(self.bn2(self.conv2(x)))
-        x = x.permute(0, 2, 1)
-        new_xyz, new_feature = sample_and_group(
+        x = self.act2(self.bn2(self.conv2(x)))  # b,64,1024
+        x = x.permute(0, 2, 1)  # b,64,1024
+
+        self.new_xyz_1, new_feature = sample_and_group(
             npoint=512, radius=0.15, nsample=32, xyz=xyz, points=x
-        )
-        feature_0 = self.gather_local_0(new_feature)
-        feature = feature_0.permute(0, 2, 1)
-        new_xyz, new_feature = sample_and_group(
-            npoint=256, radius=0.2, nsample=32, xyz=new_xyz, points=feature
-        )
-        feature_1 = self.gather_local_1(new_feature)
+        )  # b,512,32,128
+
+        feature_0 = self.gather_local_0(new_feature)  # b,128,512
+
+        feature = feature_0.permute(0, 2, 1)  # b,512,128
+
+        self.new_xyz_2, new_feature = sample_and_group(
+            npoint=256, radius=0.2, nsample=32, xyz=self.new_xyz_1, points=feature
+        )  # b,256,32,256
+        feature_1 = self.gather_local_1(new_feature)  # 1, 256, 256
 
         x = self.pt_last(feature_1)
         x = self.cat([x, feature_1], dim=1)
         x = self.conv_fuse(x)
         self.fuse_shape = x.shape
-        x = self.pool(x).view(batch_size, -1)
+        x = self.pool(x).view(self.batch_size, -1)
         x = self.act3(self.bn6(self.linear1(x)))
         x = self.dp1(x)
         x = self.act4(self.bn7(self.linear2(x)))
@@ -264,7 +272,7 @@ class PCT(nn.Module):
         x = self.linear3(x)
 
         return x
-    
+
     def relprop(
         self,
         cam=None,
@@ -273,7 +281,6 @@ class PCT(nn.Module):
         start_layer=0,
         **kwargs,
     ):
-
         cam = self.linear3.relprop(cam, **kwargs)
         cam = self.dp2.relprop(cam, **kwargs)
         cam = self.act4.relprop(cam, **kwargs)
@@ -283,32 +290,61 @@ class PCT(nn.Module):
         cam = self.act3.relprop(cam, **kwargs)
         cam = self.bn6.relprop(cam, **kwargs)
         cam = self.linear1.relprop(cam, **kwargs)
+
+        cam = torch.unsqueeze(cam, -1)
+
         cam = self.pool.relprop(cam, **kwargs)
 
-        cam = cam.view(self.fuse_shape)
-
         cam = self.conv_fuse.relprop(cam, **kwargs)
-        cam = self.cat.relprop(cam, **kwargs)
+        cam, cam_1 = self.cat.relprop(cam, **kwargs)
         cam = self.pt_last.relprop(cam, **kwargs)
 
         if method == "full":
-            pass
+            cam = self.gather_local_1.relprop(cam, **kwargs)
+            cam = cam.sum(2).reshape(self.batch_size, 128, 512)
+            cam = self.gather_local_0.relprop(cam, **kwargs)
+            cam = cam.sum(2).reshape(self.batch_size, 64, 1024)
+
+            cam = self.act2.relprop(cam, **kwargs)
+            cam = self.bn2.relprop(cam, **kwargs)
+            cam = self.conv2.relprop(cam, **kwargs)
+
+            cam = self.act1.relprop(cam, **kwargs)
+            cam = self.bn1.relprop(cam, **kwargs)
+            cam = self.conv1.relprop(cam, **kwargs)
+            return cam.permute(0, 2, 1).squeeze(0)
 
         elif method == "rollout":
             # cam rollout
             attn_cams = []
-            for attn in [self.pt_last.sa1,self.pt_last.sa2,self.pt_last.sa3,self.pt_last.sa4]:
+            for attn in [
+                self.pt_last.sa1,
+                self.pt_last.sa2,
+                self.pt_last.sa3,
+                self.pt_last.sa4,
+            ]:
                 attn_heads = attn.get_attn_cam().clamp(min=0)
                 avg_heads = (attn_heads.sum(dim=1) / attn_heads.shape[1]).detach()
                 attn_cams.append(avg_heads)
-            cam = compute_rollout_attention(attn_cams, start_layer=start_layer)
-            cam = cam[:, 0, 1:]
-            return cam
+
+            rollout = compute_rollout_attention(attn_cams, start_layer=start_layer)
+            rollout = knn_interpolate(
+                rollout.squeeze(0),
+                self.new_xyz_2.squeeze(0),
+                self.orig_xyz.permute(0, 2, 1).squeeze(0),
+            )
+            rollout = rollout.sum(1)
+            return rollout
 
         # our method, method name grad is legacy
         elif method == "transformer_attribution" or method == "grad":
             cams = []
-            for attn in [self.pt_last.sa1,self.pt_last.sa2,self.pt_last.sa3,self.pt_last.sa4]:
+            for attn in [
+                self.pt_last.sa1,
+                self.pt_last.sa2,
+                self.pt_last.sa3,
+                self.pt_last.sa4,
+            ]:
                 grad = attn.get_attn_gradients()
                 cam = attn.get_attn_cam()
                 cam = cam[0].reshape(-1, cam.shape[-1], cam.shape[-1])
@@ -317,14 +353,24 @@ class PCT(nn.Module):
                 cam = cam.clamp(min=0).mean(dim=0)
                 cams.append(cam.unsqueeze(0))
             rollout = compute_rollout_attention(cams, start_layer=start_layer)
-            cam = rollout[:, 0, 1:]
-            return cam
+            rollout = knn_interpolate(
+                rollout.squeeze(0),
+                self.new_xyz_2.squeeze(0),
+                self.orig_xyz.permute(0, 2, 1).squeeze(0),
+            )
+            rollout = rollout.sum(1)
+            return rollout
 
         elif method == "last_layer_attn":
-            cam = self.pt_last.sa4.attn.get_attn()
+            cam = self.pt_last.sa4.get_attn()
             cam = cam[0].reshape(-1, cam.shape[-1], cam.shape[-1])
             cam = cam.clamp(min=0).mean(dim=0)
-            cam = cam[0, 1:]
+            cam = knn_interpolate(
+                cam,
+                self.new_xyz_2.squeeze(0),
+                self.orig_xyz.permute(0, 2, 1).squeeze(0),
+            )
+            cam = cam.sum(1)
             return cam
 
 
@@ -364,7 +410,7 @@ class Point_Transformer_Last(nn.Module):
         x = self.cat((x1, x2, x3, x4), dim=1)
 
         return x
-    
+
     def relprop(self, cam, **kwargs):
         cam1, cam2, cam3, cam4 = self.cat.relprop(cam, **kwargs)
 
@@ -381,7 +427,6 @@ class Point_Transformer_Last(nn.Module):
         cam = self.act1.relprop(cam, **kwargs)
 
         return cam
-
 
 
 class SA_Layer(nn.Module):
@@ -470,7 +515,7 @@ class SA_Layer(nn.Module):
 
     def relprop(self, cam, **kwargs):
         cam_5, cam_r = self.add2.relprop(cam, **kwargs)
-        cam_r = self.act1.relprop(cam_r **kwargs)
+        cam_r = self.act1.relprop(cam_r, **kwargs)
         cam_r = self.after_norm.relprop(cam_r, **kwargs)
         cam_r = self.trans_conv.relprop(cam_r, **kwargs)
         cam_4, cam_r = self.add1.relprop(cam_r, **kwargs)
@@ -479,8 +524,8 @@ class SA_Layer(nn.Module):
         cam1 /= 2
         cam_v /= 2
 
-        self.save_v_cam(cam_v, **kwargs)
-        self.save_attn_cam(cam1, **kwargs)
+        self.save_v_cam(cam_v)
+        self.save_attn_cam(cam1)
 
         cam1 = self.softmax.relprop(cam1, **kwargs)
         cam_q, cam_k = self.matmul1.relprop(cam1, **kwargs)
@@ -488,13 +533,12 @@ class SA_Layer(nn.Module):
         cam_k /= 2
 
         cam_3 = self.v_conv.relprop(cam_v, **kwargs)
-        cam_2 = self.v_conv.relprop(cam_k, **kwargs)
+        cam_2 = self.k_conv.relprop(cam_k, **kwargs)
 
-        cam_q = cam_q.permute(0,2,1)
+        cam_q = cam_q.permute(0, 2, 1)
         cam_1 = self.q_conv.relprop(cam_q, **kwargs)
-        cam = self.clone.relprop((cam_1,cam_2,cam_3, cam_4,cam_5), **kwargs)
+        cam = self.clone.relprop((cam_1, cam_2, cam_3, cam_4, cam_5), **kwargs)
         return cam
-
 
 
 def safe_divide(a, b):
@@ -549,7 +593,8 @@ class RelPropSimple(RelProp):
         else:
             outputs = self.X * (C[0])
         return outputs
-    
+
+
 class ReLU(nn.ReLU, RelProp):
     pass
 
@@ -557,8 +602,10 @@ class ReLU(nn.ReLU, RelProp):
 class GELU(nn.GELU, RelProp):
     pass
 
+
 class LeakyReLU(nn.LeakyReLU, RelProp):
     pass
+
 
 class Softmax(nn.Softmax, RelProp):
     pass
@@ -582,6 +629,7 @@ class AdaptiveMaxPool1d(nn.AdaptiveMaxPool1d, RelPropSimple):
 
 class AvgPool2d(nn.AvgPool2d, RelPropSimple):
     pass
+
 
 class Add(RelPropSimple):
     def forward(self, inputs):
@@ -608,12 +656,14 @@ class Add(RelPropSimple):
 
         return outputs
 
+
 class bmm(RelPropSimple):
     def __init__(self):
         super().__init__()
 
     def forward(self, operands):
         return torch.bmm(operands[0], operands[1])
+
 
 class Clone(RelProp):
     def forward(self, input, num):
@@ -658,23 +708,27 @@ class Sequential(nn.Sequential):
         for m in reversed(self._modules.values()):
             R = m.relprop(R, alpha)
         return R
-    
+
+
 class BatchNorm1d(nn.BatchNorm1d, RelProp):
     def relprop(self, R, alpha):
         X = self.X
         beta = 1 - alpha
-        weight = self.weight.unsqueeze(0).unsqueeze(2).unsqueeze(3) / (
-            (
-                self.running_var.unsqueeze(0).unsqueeze(2).unsqueeze(3).pow(2)
-                + self.eps
-            ).pow(0.5)
-        )
+        if len(R.shape) == 3:
+            weight = self.weight.unsqueeze(0).unsqueeze(2) / (
+                (self.running_var.unsqueeze(0).unsqueeze(2).pow(2) + self.eps).pow(0.5)
+            )
+        else:
+            weight = self.weight.unsqueeze(0) / (
+                (self.running_var.unsqueeze(0).pow(2) + self.eps).pow(0.5)
+            )
         Z = X * weight + 1e-9
         S = R / Z
         Ca = S * weight
         R = self.X * (Ca)
         return R
-    
+
+
 class Linear(nn.Linear, RelProp):
     def relprop(self, R, alpha):
         beta = alpha - 1
@@ -699,7 +753,8 @@ class Linear(nn.Linear, RelProp):
         R = alpha * activator_relevances - beta * inhibitor_relevances
 
         return R
-    
+
+
 class Conv1d(nn.Conv1d, RelProp):
     def gradprop2(self, DY, weight):
         Z = self.forward(self.X)
@@ -726,21 +781,13 @@ class Conv1d(nn.Conv1d, RelProp):
             L = (
                 self.X * 0
                 + torch.min(
-                    torch.min(
-                        torch.min(self.X, dim=1, keepdim=True)[0], dim=2, keepdim=True
-                    )[0],
-                    dim=3,
-                    keepdim=True,
+                    torch.min(self.X, dim=1, keepdim=True)[0], dim=2, keepdim=True
                 )[0]
             )
             H = (
                 self.X * 0
                 + torch.max(
-                    torch.max(
-                        torch.max(self.X, dim=1, keepdim=True)[0], dim=2, keepdim=True
-                    )[0],
-                    dim=3,
-                    keepdim=True,
+                    torch.max(self.X, dim=1, keepdim=True)[0], dim=2, keepdim=True
                 )[0]
             )
             Za = (

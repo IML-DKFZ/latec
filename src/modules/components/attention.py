@@ -44,6 +44,13 @@ def rescale_attention_2D(tensor, height=14, width=14):
     return atten
 
 
+def rescale_attention_1D(tensor, height=14, width=14):
+    atten = torch.nn.functional.interpolate(tensor, scale_factor=4, mode="linear")
+    # atten = atten.reshape(224, 224).detach().cpu().numpy()
+    atten = (atten - atten.min()) / (atten.max() - atten.min())
+    return atten
+
+
 class AttentionLRP:
     def __init__(self, model, modality):
         self.model = model
@@ -90,12 +97,18 @@ class AttentionLRP:
                     ).squeeze()
                 elif self.modality == "Voxel":
                     atten = rescale_attention_3D(atten)
+                elif self.modality == "Point_Cloud":
+                    atten = np.repeat(
+                        np.expand_dims(atten.detach().cpu().numpy(), -1),
+                        3,
+                        axis=-1,
+                    ).squeeze()
             else:
                 if self.modality == "Image":
                     atten = np.repeat(
                         np.expand_dims(atten.detach().cpu().numpy(), 1), 3, axis=1
                     ).squeeze()
-                elif self.modality == "Voxel":
+                elif self.modality == "Voxel" or self.modality == "Point_Cloud":
                     atten = atten.detach().cpu().numpy()
 
             list.append(atten)

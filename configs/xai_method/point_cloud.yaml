@@ -1,48 +1,48 @@
 # Single:
-occlusion: True
+occlusion: False
 occ_strides: 1
 occ_sliding_window_shapes: 3
 occ_baselines: 0
 
-lime: True
+lime: False
 lime_alpha: 2
 lime_n_samples: 10
 lime_perturbations_per_eval: 1
 
-kernel_shap: True
+kernel_shap: False
 ks_baselines: 0
 ks_n_samples: 10
 ks_perturbations_per_eval: 1
 
-saliency: True
+saliency: False
 
-input_x_gradient: True
+input_x_gradient: False
 
-guided_backprob: True
+guided_backprob: False
 
-gcam: True
+gcam: False
 
-scam: True
+scam: False
 scam_batch_size: 64
 
-gcampp: True
+gcampp: False
 
-ig: True
+ig: False
 ig_baselines: 0
 ig_n_steps: 30
 
-eg: True
+eg: False
 eg_n_samples: 40 # 80
 eg_stdevs: 0.001 # 0.001
 
-deeplift: True
+deeplift: False
 dl_eps: 0.000000001
 dl_baselines: 0
 
 
-deeplift_shap: True
+deeplift_shap: False
 
-lrp: True
+lrp: False
 lrp_eps: 0.005
 
 attention: True
