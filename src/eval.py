@@ -89,19 +89,26 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
         ):
             eval_methods = EvalModule(cfg, model)
 
-            xai_methods = XAIMethodsModule(
-                cfg, model, x_batch.to(cfg.eval_method.device)
-            )
+            if torch.is_tensor(x_batch) == False:
+                x_batch = torch.from_numpy(x_batch).to(cfg.eval_method.device)
+            else:
+                x_batch = x_batch.to(cfg.eval_method.device)
+
+            xai_methods = XAIMethodsModule(cfg, model, x_batch)
 
             a_batch = attr_data[count_model][:, count_xai, :]
 
+            if cfg.data.modality == "Image" or cfg.data.modality == "Point_Cloud":
+                x_batch = x_batch.cpu().numpy()
+            elif cfg.data.modality == "Voxel":
+                x_batch = x_batch.squeeze().cpu().numpy()
+                a_batch = a_batch.squeeze()
+
             results = eval_methods.evaluate(
                 model,
-                x_batch.cpu().numpy()
-                if cfg.data.modality == "Image"
-                else x_batch.squeeze().cpu().numpy(),
+                x_batch,
                 y_batch.cpu().numpy(),
-                a_batch if cfg.data.modality == "Image" else a_batch.squeeze(),
+                a_batch,
                 xai_methods,
                 count_xai,
             )

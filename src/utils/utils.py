@@ -16,10 +16,8 @@ log = pylogger.get_pylogger(__name__)
 
 def task_wrapper(task_func: Callable) -> Callable:
     def wrap(cfg: DictConfig):
-
         # execute the task
         try:
-
             # apply extra utilities
             extras(cfg)
 
@@ -27,7 +25,6 @@ def task_wrapper(task_func: Callable) -> Callable:
 
         # things to do if exception occurs
         except Exception as ex:
-
             # save exception to `.log` file
             log.exception("")
 
@@ -37,7 +34,6 @@ def task_wrapper(task_func: Callable) -> Callable:
 
         # things to always do after either success or exception
         finally:
-
             # display output dir path in terminal
             log.info(f"Logs Output dir: {cfg.paths.output_dir}")
 

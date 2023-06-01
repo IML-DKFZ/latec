@@ -3,9 +3,10 @@ occlusion: True
 occ_strides: 25
 occ_sliding_window_shapes: 50
 occ_baselines: 0
+perturbations_per_eval: 1
 
 lime: True
-lime_alpha: 2
+lime_alpha: 1.0
 lime_n_samples: 10
 lime_perturbations_per_eval: 1
 

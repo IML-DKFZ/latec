@@ -2,11 +2,11 @@
 
 defaults:
   - _self_
-  - data: imagenet.yaml # choose datamodule with `test_dataloader()` for evaluation
+  - data: modelnet40.yaml # choose datamodule with `test_dataloader()` for evaluation
   - logger: null
   - paths: default.yaml
-  - eval_method: image.yaml
-  - xai_method: image.yaml
+  - eval_method: point_cloud.yaml
+  - xai_method: point_cloud.yaml
   - extras: default.yaml
   - hydra: default.yaml
 
@@ -17,4 +17,4 @@ time: ${now:%Y-%m-%d}_${now:%H-%M-%S}
 
 # passing checkpoint path is necessary for evaluation
 ckpt_path: "data/model_weights/"
-attr_path: "/attr_imagenet_dataset_14_methods_2023-04-20_14-29-59.npz"
+attr_path: "/attr_shapenet_dataset_11_methods_2023-05-26_12-11-22.npz"

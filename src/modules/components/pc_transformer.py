@@ -312,7 +312,7 @@ class PCT(nn.Module):
             cam = self.act1.relprop(cam, **kwargs)
             cam = self.bn1.relprop(cam, **kwargs)
             cam = self.conv1.relprop(cam, **kwargs)
-            return cam.permute(0, 2, 1).squeeze(0)
+            return cam.squeeze(0)
 
         elif method == "rollout":
             # cam rollout

@@ -99,9 +99,9 @@ class AttentionLRP:
                     atten = rescale_attention_3D(atten)
                 elif self.modality == "Point_Cloud":
                     atten = np.repeat(
-                        np.expand_dims(atten.detach().cpu().numpy(), -1),
+                        np.expand_dims(atten.detach().cpu().numpy(), 0),
                         3,
-                        axis=-1,
+                        axis=0,
                     ).squeeze()
             else:
                 if self.modality == "Image":

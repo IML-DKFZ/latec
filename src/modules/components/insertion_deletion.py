@@ -19,8 +19,9 @@ class BaseEvaluation(metaclass=ABCMeta):
 
 class InsertionDeletion(BaseEvaluation):
     def __init__(self, pixel_batch_size=10, sigma=5.0):
+        self.sigma = sigma
         self.pixel_batch_size = pixel_batch_size
-        self.gaussian_blurr = GaussianBlur(int(2 * sigma - 1), sigma)
+        self.gaussian_blurr = GaussianBlur(9, sigma)
 
     @torch.no_grad()
     def evaluate(self, model, x_batch, y_batch, a_batch):  # noqa
@@ -64,7 +65,11 @@ class InsertionDeletion(BaseEvaluation):
             )
 
             # apply insertion game
-            blurred_input = self.gaussian_blurr(x_batch)
+            if len(x_batch.shape) > 3:
+                blurred_input = self.gaussian_blurr(x_batch)
+            else:
+                blurred_input = x_batch + (torch.randn_like(x_batch) * self.sigma)
+
             insertion_perturber = PixelPerturber(blurred_input, x_batch)
             insertion_scores = self._procedure_perturb(
                 insertion_perturber, num_pixels, indices, y_batch
@@ -152,7 +157,10 @@ class PixelPerturber(Perturber):
         self.baseline = baseline
 
     def perturb(self, r: int, c: int):
-        self.current[:, r, c] = self.baseline[:, r, c]
+        if len(self.baseline.shape) > 2:
+            self.current[:, r, c] = self.baseline[:, r, c]
+        else:
+            self.current[r, c] = self.baseline[r, c]
 
     def get_current(self) -> torch.Tensor:
         return self.current

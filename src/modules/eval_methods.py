@@ -1,5 +1,6 @@
 import quantus
 import numpy as np
+import torch
 
 from quantus import (
     FaithfulnessCorrelation,
@@ -22,8 +23,17 @@ from quantus import (
     EffectiveComplexity,
 )
 from modules.components.insertion_deletion import InsertionDeletion
+from quantus.functions.perturb_func import gaussian_noise
+from captum.metrics import infidelity
 
 # disable_warnings = True
+
+
+def perturb_fn(inputs):
+    noise = (
+        torch.tensor(np.random.normal(0, 0.003, inputs.shape)).float().to(inputs.device)
+    )
+    return noise, inputs - noise
 
 
 class EvalModule:
@@ -41,6 +51,12 @@ class EvalModule:
             layer = ["_blocks.15._expand_conv"]
         elif model.__class__.__name__ == "VideoResNet":
             layer = ["layer4.0.conv1.1"]
+        elif model.__class__.__name__ == "PointNet":
+            layer = ["transform.bn1"]
+        elif model.__class__.__name__ == "DGCNN":
+            layer = ["linear1"]
+        elif model.__class__.__name__ == "PCT":
+            layer = ["linear1"]
 
         # Faithfulness
         if self.eval_cfg.FaithfulnessCorrelation:
@@ -114,8 +130,13 @@ class EvalModule:
         if self.eval_cfg.ROAD:
             self.ROAD = ROAD(
                 noise=self.eval_cfg.road_noise,
-                perturb_func=quantus.perturb_func.noisy_linear_imputation,
+                perturb_func=quantus.perturb_func.gaussian_noise
+                if self.modality == "Point_Cloud"
+                else quantus.perturb_func.noisy_linear_imputation,
                 percentages=list(range(1, self.eval_cfg.road_percentages_max, 2)),
+                perturb_func_kwargs={"indexed_axes": (0, 1)}
+                if self.modality == "Point_Cloud"
+                else None,
                 display_progressbar=False,
                 disable_warnings=True,
                 normalise=self.eval_cfg.normalise,
@@ -270,11 +291,12 @@ class EvalModule:
                     device=self.eval_cfg.device,
                 )
             )
+
         if self.eval_cfg.InsertionDeletion:
             ins_auc, del_auc = self.InsertionDeletion.evaluate(
                 model=model, x_batch=x_batch, y_batch=y_batch, a_batch=a_batch
             )
-            eval_scores.append(ins_auc)  # not right atm
+            eval_scores.append(ins_auc)
             eval_scores.append(del_auc)
 
         if self.eval_cfg.IROF:
@@ -287,6 +309,7 @@ class EvalModule:
                     device=self.eval_cfg.device,
                 )
             )
+
         if self.eval_cfg.ROAD:
             eval_scores.append(
                 self.ROAD(
@@ -299,6 +322,7 @@ class EvalModule:
                     device=self.eval_cfg.device,
                 )
             )
+
         if self.eval_cfg.Sufficiency:
             eval_scores.append(
                 self.Sufficiency(
@@ -323,6 +347,7 @@ class EvalModule:
                     device=self.eval_cfg.device,
                 )
             )
+
         if self.eval_cfg.MaxSensitivity:
             eval_scores.append(
                 self.MaxSensitivity(
@@ -335,6 +360,7 @@ class EvalModule:
                     device=self.eval_cfg.device,
                 )
             )
+
         if self.eval_cfg.Continuity:
             eval_scores.append(
                 self.Continuity(
@@ -347,6 +373,7 @@ class EvalModule:
                     device=self.eval_cfg.device,
                 )
             )
+
         if self.eval_cfg.RelativeInputStability:
             eval_scores.append(
                 self.RelativeInputStability(
@@ -359,6 +386,7 @@ class EvalModule:
                     device=self.eval_cfg.device,
                 )
             )
+
         if self.eval_cfg.RelativeOutputStability:
             eval_scores.append(
                 self.RelativeOutputStability(
@@ -371,6 +399,7 @@ class EvalModule:
                     device=self.eval_cfg.device,
                 )
             )
+
         if self.eval_cfg.RelativeRepresentationStability:
             eval_scores.append(
                 self.RelativeRepresentationStability(
@@ -383,16 +412,28 @@ class EvalModule:
                     device=self.eval_cfg.device,
                 )
             )
+
         if self.eval_cfg.Infidelity:
-            eval_scores.append(
-                self.Infidelity(
-                    model=model,
-                    x_batch=x_batch,
-                    y_batch=y_batch,
-                    a_batch=a_batch,
-                    device=self.eval_cfg.device,
+            if self.modality == "Point_Cloud":
+                score = infidelity(
+                    model,
+                    perturb_fn,
+                    torch.from_numpy(x_batch.copy()).cuda(),
+                    torch.from_numpy(a_batch.copy()).cuda(),
+                    target=torch.from_numpy(y_batch.copy()).cuda(),
+                    n_perturb_samples=self.eval_cfg.in_n_perturb_samples,
                 )
-            )
+                eval_scores.append(score.detach().cpu().numpy())
+            else:
+                eval_scores.append(
+                    self.Infidelity(
+                        model=model,
+                        x_batch=x_batch,
+                        y_batch=y_batch,
+                        a_batch=a_batch,
+                        device=self.eval_cfg.device,
+                    )
+                )
 
         # Usability
         if self.eval_cfg.Sparseness:
@@ -405,6 +446,7 @@ class EvalModule:
                     device=self.eval_cfg.device,
                 )
             )
+
         if self.eval_cfg.Complexity:
             eval_scores.append(
                 self.Complexity(
@@ -415,6 +457,7 @@ class EvalModule:
                     device=self.eval_cfg.device,
                 )
             )
+
         if self.eval_cfg.EffectiveComplexity:
             eval_scores.append(
                 self.EffectiveComplexity(
@@ -425,4 +468,5 @@ class EvalModule:
                     device=self.eval_cfg.device,
                 )
             )
+
         return eval_scores

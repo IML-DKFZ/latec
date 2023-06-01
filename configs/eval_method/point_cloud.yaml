@@ -2,32 +2,32 @@
 
 FaithfulnessCorrelation: True # -1 to 1
 fc_nr_runs: 100
-fc_subset_size: 56
+fc_subset_size: 32
 fc_perturb_baseline: "black"
 
 FaithfulnessEstimate: True
-fe_features_in_step: 56
+fe_features_in_step: 32
 fe_perturb_baseline: "black"
 
 MonotonicityCorrelation: True
 mc_nr_samples: 10
-mc_features_in_step: 392
+mc_features_in_step: 256
 mc_perturb_baseline: "uniform"
 
 PixelFlipping: True
-pf_features_in_step: 56
+pf_features_in_step: 32
 pf_perturb_baseline: "black"
 
 RegionPerturbation: True
-rp_patch_size: 4
-rp_regions_evaluation: 10
+rp_patch_size: 3
+rp_regions_evaluation: 32
 rp_perturb_baseline: "uniform"
 
 InsertionDeletion: True
 id_pixel_batch_size: 50
-id_sigma: 5.0
+id_sigma: 0.08
 
-IROF: True
+IROF: False
 irof_segmentation_method: "slic"
 irof_perturb_baseline: "mean"
 
@@ -42,8 +42,8 @@ su_threshold: 0.6
 # Robustness
 
 LocalLipschitzEstimate: True
-lle_nr_samples: 10
-lle_perturb_std: 0.2
+lle_nr_samples: 5
+lle_perturb_std: 0.02
 lle_perturb_mean: 0.0
 
 MaxSensitivity: True
@@ -51,8 +51,8 @@ ms_nr_samples: 10
 ms_lower_bound: 0.2
 
 Continuity: True
-co_patch_size: 4
-co_nr_steps: 10
+co_patch_size: 3
+co_nr_steps: 5
 co_perturb_baseline: "uniform"
 
 RelativeInputStability: True 
@@ -65,9 +65,9 @@ RelativeRepresentationStability: True
 rrs_nr_samples: 5
 
 Infidelity: True
-in_perturb_baseline: "uniform"
+in_perturb_baseline: "uniform" # For PC we use Gaussian pertubation!
 in_n_perturb_samples: 5
-in_perturb_patch_sizes: 7
+in_perturb_patch_sizes: 3
 
 # Usability
 

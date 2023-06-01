@@ -1,0 +1,12 @@
+_target_: src.data.coma_datamodule.CoMADataModule
+data_dir: ${paths.data_dir}
+batch_size: 2
+num_workers: 0
+pin_memory: False
+
+modality: Point_Cloud
+num_classes: 12
+
+weights_pointnet: "data/model_weights/CoMA/PointNet-epoch=99-val_F1=0.9867-val_Accuracy=0.9880.ckpt" 
+weights_dgcnn: "data/model_weights/CoMA/DGCNN-epoch=99-val_F1=0.9704-val_Accuracy=0.9753.ckpt"
+weights_pct: "data/model_weights/CoMA/PCT-epoch=149-val_F1=0.9838-val_Accuracy=0.9850.ckpt"

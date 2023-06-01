@@ -9,6 +9,7 @@ import numpy as np
 import random
 from torch_geometric.transforms import NormalizeScale
 from torch_geometric.datasets import ModelNet, ShapeNet
+from torch_geometric.transforms import FixedPoints
 
 
 class SamplePoints(BaseTransform):
@@ -110,7 +111,7 @@ class ModelNet40DataModule(LightningDataModule):
 
         # data transformations
         pretransform = NormalizeScale()
-        self.transforms = SamplePoints(1024)
+        self.transforms = FixedPoints(1024)
 
         self.data = ModelNet(
             root=data_dir + "/ModelNet40/",

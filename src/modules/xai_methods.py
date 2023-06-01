@@ -13,7 +13,13 @@ from captum.attr import (
     Lime,
     LRP,
 )
-from captum._utils.models.linear_model.model import SGDLasso
+from captum._utils.models.linear_model.model import (
+    SGDLasso,
+    SGDRidge,
+    SkLearnLinearRegression,
+    SkLearnLasso,
+    SkLearnRidge,
+)
 
 from modules.components.score_cam import ScoreCAM
 from modules.components.grad_cam import GradCAM
@@ -156,13 +162,17 @@ class XAIMethodsModule:
                     )
                 ),
                 "baselines": self.xai_cfg.occ_baselines,
+                "perturbations_per_eval": self.xai_cfg.perturbations_per_eval,
+                "show_progress": False,
             }
             self.xai_hparams.append(occ_hparams)
 
         if self.xai_cfg.lime:
             lime = Lime(
                 model,
-                interpretable_model=SGDLasso(),
+                interpretable_model=SkLearnRidge(alpha=self.xai_cfg.lime_alpha)
+                if self.modality == "Point_Cloud"
+                else SGDLasso(alpha=self.xai_cfg.lime_alpha),
             )
             self.xai_methods.append(lime)
             lime_hparams = {
