@@ -180,7 +180,8 @@ class BaseCAM:
 
     def aggregate_multi_layers(self, cam_per_target_layer: np.ndarray) -> np.ndarray:
         cam_per_target_layer = np.concatenate(cam_per_target_layer, axis=1)
-        cam_per_target_layer = np.maximum(cam_per_target_layer, 0)
+        if self.include_negative == False:
+            cam_per_target_layer = np.maximum(cam_per_target_layer, 0)
         result = np.mean(cam_per_target_layer, axis=1)
         return scale_cam_image(result)
 

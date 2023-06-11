@@ -53,28 +53,29 @@ class DGCNN(nn.Module):
         self.conv1 = nn.Sequential(
             nn.Conv2d(6, 64, kernel_size=1, bias=False),
             nn.BatchNorm2d(64),
-            nn.LeakyReLU(negative_slope=0.2),
+            nn.ReLU(),
         )
         self.conv2 = nn.Sequential(
             nn.Conv2d(64 * 2, 64, kernel_size=1, bias=False),
             nn.BatchNorm2d(64),
-            nn.LeakyReLU(negative_slope=0.2),
+            nn.ReLU(),
         )
         self.conv3 = nn.Sequential(
             nn.Conv2d(64 * 2, 128, kernel_size=1, bias=False),
             nn.BatchNorm2d(128),
-            nn.LeakyReLU(negative_slope=0.2),
+            nn.ReLU(),
         )
         self.conv4 = nn.Sequential(
             nn.Conv2d(128 * 2, 256, kernel_size=1, bias=False),
             nn.BatchNorm2d(256),
-            nn.LeakyReLU(negative_slope=0.2),
+            nn.ReLU(),
         )
         self.conv5 = nn.Sequential(
             nn.Conv1d(512, 1024, kernel_size=1, bias=False),
             nn.BatchNorm1d(1024),
-            nn.LeakyReLU(negative_slope=0.2),
+            nn.ReLU(),
         )
+        
         self.linear1 = nn.Linear(1024 * 2, 512, bias=False)
         self.bn6 = nn.BatchNorm1d(512)
         self.dp1 = nn.Dropout(p=0.5)

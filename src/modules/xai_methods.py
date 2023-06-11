@@ -114,11 +114,11 @@ class XAIMethodsModule:
             )
             include_negative = True
         elif model.__class__.__name__ == "EfficientNet3D":
-            layer = [model._blocks[-1]]
+            layer = [model._blocks[-13]]
             reshap = None
             include_negative = False
         elif model.__class__.__name__ == "VideoResNet":
-            layer = [model.layer4]
+            layer = [model.layer3]
             reshap = None
             include_negative = False
         elif model.__class__.__name__ == "PointNet":
@@ -282,7 +282,8 @@ class XAIMethodsModule:
                 attlrp_hparams = {"method": "transformer_attribution"}
                 self.xai_hparams.append(attlrp_hparams)
             else:
-                lrp = LRP(model, epsilon=self.xai_cfg.lrp_eps)
+                lrp = LRP(model, epsilon=self.xai_cfg.lrp_eps, gamma = self.xai_cfg.lrp_gamma
+                          )
                 lrp_hparams = {}
                 self.xai_hparams.append(lrp_hparams)
                 self.xai_methods.append(lrp)

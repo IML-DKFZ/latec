@@ -10,6 +10,7 @@ from torchvision.utils import _log_api_usage_once
 from torchvision.models._api import Weights, WeightsEnum
 from torchvision.models._meta import _IMAGENET_CATEGORIES
 from torchvision.models._utils import _ovewrite_named_param, handle_legacy_interface
+from captum.attr._utils.custom_modules import Addition_Module
 
 
 __all__ = [
@@ -109,7 +110,6 @@ class BasicBlock(nn.Module):
 
         return out
 
-
 class Bottleneck(nn.Module):
     # Bottleneck in torchvision places the stride for downsampling at 3x3 convolution(self.conv2)
     # while original implementation places the stride at the first 1x1 convolution(self.conv1)
@@ -144,6 +144,7 @@ class Bottleneck(nn.Module):
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
         self.stride = stride
+        self.add = Addition_Module()
 
         # Added another relu here
         self.relu2 = nn.ReLU(inplace=True)
@@ -166,7 +167,7 @@ class Bottleneck(nn.Module):
         if self.downsample is not None:
             identity = self.downsample(x)
 
-        out += identity
+        out = self.add(out, identity)
         out = self.relu3(out)
 
         return out
