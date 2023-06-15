@@ -111,7 +111,7 @@ class ModelNet40DataModule(LightningDataModule):
 
         # data transformations
         pretransform = NormalizeScale()
-        self.transforms = FixedPoints(1024)
+        self.transforms = SamplePoints(1024)
 
         self.data = ModelNet(
             root=data_dir + "/ModelNet40/",

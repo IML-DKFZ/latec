@@ -3,7 +3,7 @@ data_dir: ${paths.data_dir}
 batch_size: 2
 num_workers: 0
 pin_memory: False
-categories: None # "Airplane"
+categories: "None" # "Airplane"
 
 modality: Point_Cloud
 num_classes: 16
