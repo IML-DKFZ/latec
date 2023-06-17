@@ -148,4 +148,5 @@ dmypy.json
 configs/local/default.yaml
 /data/
 /logs/
+/configs/paths/
 .env
