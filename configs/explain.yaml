@@ -15,4 +15,4 @@ tags: ["dev"]
 time: ${now:%Y-%m-%d}_${now:%H-%M-%S}
 
 # passing checkpoint path is necessary for evaluation
-ckpt_path: "data/model_weights/"
+ckpt_path: ${paths.data_dir}/model_weights/

@@ -1,5 +1,5 @@
 _target_: src.data.resisc45_datamodule.RESISC45DataModule
-data_dir: ${paths.data_dir}
+data_dir: ${paths.data_dir}/datasets
 batch_size: 2
 num_workers: 0
 pin_memory: False
@@ -9,6 +9,6 @@ resize_mode: "bilinear"
 modality: Image
 num_classes: 45
 
-weights_resnet: "data/model_weights/RESISC45/ResNet50-epoch=59-val_loss=0.15-val_AUROC=1.000.ckpt"
-weights_effnet: "data/model_weights/RESISC45/EfficientNetB0-epoch=49-val_loss=0.16-val_AUROC=0.999.ckpt"
-weights_vit: "data/model_weights/RESISC45/DeiTViT-epoch=59-val_loss=0.15-val_AUROC=1.000.ckpt"
+weights_resnet: ${paths.data_dir}/model_weights/RESISC45/ResNet50-epoch=59-val_loss=0.15-val_AUROC=1.000.ckpt
+weights_effnet: ${paths.data_dir}/model_weights/RESISC45/EfficientNetB0-epoch=49-val_loss=0.16-val_AUROC=0.999.ckpt
+weights_vit: ${paths.data_dir}//model_weights/RESISC45/DeiTViT-epoch=59-val_loss=0.15-val_AUROC=1.000.ckpt

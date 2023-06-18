@@ -66,8 +66,8 @@ def explain(cfg: DictConfig) -> Tuple[dict, dict]:
         attr_total.append(attr)  # obs , XAI, c, w, h
 
     np.savez(
-        str(cfg.paths.root_dir)
-        + "/data/attribution_maps/"
+        str(cfg.paths.data_dir)
+        + "/attribution_maps/"
         + cfg.data.modality
         + "/attr_"
         + str(datamodule.__name__)

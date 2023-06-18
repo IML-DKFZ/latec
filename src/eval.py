@@ -44,7 +44,7 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
     log.info(
         f"Loading Attributions <{cfg.attr_path}> for modality <{cfg.data.modality}>"
     )
-    attr_data = np.load("data/attribution_maps/" + cfg.data.modality + cfg.attr_path)
+    attr_data = np.load(str(cfg.paths.data_dir) + "/attribution_maps/" + cfg.data.modality + cfg.attr_path)
     attr_data = [
         attr_data["arr_0"],
         attr_data["arr_1"],
@@ -120,8 +120,8 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
     eval_scores_total = np.array(eval_scores_total)
 
     np.savez(
-        str(cfg.paths.root_dir)
-        + "/data/evaluation/"
+        str(cfg.paths.data_dir)
+        + "/evaluation/"
         + cfg.data.modality
         + "/attr_"
         + str(datamodule.__name__)

@@ -1,5 +1,5 @@
 _target_: src.data.adrenalmnist3d_datamodule.AdrenalMNSIT3DDataModule
-data_dir: ${paths.data_dir}
+data_dir: ${paths.data_dir}/datasets
 batch_size: 2
 num_workers: 0
 pin_memory: False
@@ -7,6 +7,6 @@ pin_memory: False
 modality: Voxel
 num_classes: 2
 
-weights_3dresnet: "data/model_weights/AdrenalMNIST3D/3DResNet18-epoch=99-val_F1=0.8410-val_Accuracy=0.8418.ckpt"
-weights_3deffnet: "data/model_weights/AdrenalMNIST3D/3DEfficientNetB0-epoch=99-val_F1=0.8384-val_Accuracy=0.8367.ckpt"
-weights_s3dformer: "data/model_weights/AdrenalMNIST3D/Simple3DFormer-epoch=149-val_F1=0.8241-val_Accuracy=0.8214.ckpt"
+weights_3dresnet: ${paths.data_dir}/model_weights/AdrenalMNIST3D/3DResNet18-epoch=99-val_F1=0.8410-val_Accuracy=0.8418.ckpt
+weights_3deffnet: ${paths.data_dir}/model_weights/AdrenalMNIST3D/3DEfficientNetB0-epoch=99-val_F1=0.8384-val_Accuracy=0.8367.ckpt
+weights_s3dformer: ${paths.data_dir}/model_weights/AdrenalMNIST3D/Simple3DFormer-epoch=149-val_F1=0.8241-val_Accuracy=0.8214.ckpt
