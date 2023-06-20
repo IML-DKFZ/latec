@@ -52,7 +52,7 @@ ms_lower_bound: 0.2
 
 Continuity: True
 co_patch_size: 3
-co_nr_steps: 5
+co_nr_steps: 20
 co_perturb_baseline: "uniform"
 
 RelativeInputStability: True 
@@ -65,9 +65,7 @@ RelativeRepresentationStability: True
 rrs_nr_samples: 5
 
 Infidelity: True
-in_perturb_baseline: "uniform" # For PC we use Gaussian pertubation!
-in_n_perturb_samples: 5
-in_perturb_patch_sizes: 3
+in_n_perturb_samples: 50
 
 # Usability
 

@@ -31,7 +31,7 @@ from captum.metrics import infidelity
 
 def perturb_fn(inputs):
     noise = (
-        torch.tensor(np.random.normal(0, 0.003, inputs.shape)).float().to(inputs.device)
+        torch.tensor(np.random.normal(0, 0.005, inputs.shape)).float().to(inputs.device)
     )
     return noise, inputs - noise
 
@@ -208,16 +208,16 @@ class EvalModule:
                 normalise=self.eval_cfg.normalise,
             )
 
-        if self.eval_cfg.Infidelity:
-            self.Infidelity = Infidelity(
-                perturb_baseline=self.eval_cfg.in_perturb_baseline,
-                perturb_func=quantus.perturb_func.baseline_replacement_by_indices,
-                n_perturb_samples=self.eval_cfg.in_n_perturb_samples,
-                perturb_patch_sizes=[self.eval_cfg.in_perturb_patch_sizes],
-                display_progressbar=False,
-                disable_warnings=True,
-                normalise=self.eval_cfg.normalise,
-            )
+        # if self.eval_cfg.Infidelity:
+        #     self.Infidelity = Infidelity(
+        #         perturb_baseline=self.eval_cfg.in_perturb_baseline,
+        #         perturb_func=quantus.perturb_func.baseline_replacement_by_indices,
+        #         n_perturb_samples=self.eval_cfg.in_n_perturb_samples,
+        #         perturb_patch_sizes=[self.eval_cfg.in_perturb_patch_sizes],
+        #         display_progressbar=False,
+        #         disable_warnings=True,
+        #         normalise=self.eval_cfg.normalise,
+        #     )
 
         # Usability
         if self.eval_cfg.Sparseness:
@@ -414,26 +414,15 @@ class EvalModule:
             )
 
         if self.eval_cfg.Infidelity:
-            if self.modality == "Point_Cloud":
-                score = infidelity(
-                    model,
-                    perturb_fn,
-                    torch.from_numpy(x_batch.copy()).cuda(),
-                    torch.from_numpy(a_batch.copy()).cuda(),
-                    target=torch.from_numpy(y_batch.copy()).cuda(),
-                    n_perturb_samples=self.eval_cfg.in_n_perturb_samples,
-                )
-                eval_scores.append(score.detach().cpu().numpy())
-            else:
-                eval_scores.append(
-                    self.Infidelity(
-                        model=model,
-                        x_batch=x_batch,
-                        y_batch=y_batch,
-                        a_batch=a_batch,
-                        device=self.eval_cfg.device,
-                    )
-                )
+            score = infidelity(
+                model,
+                perturb_fn,
+                torch.from_numpy(x_batch.copy()).to(next(model.parameters()).device),
+                torch.from_numpy(a_batch.copy()).to(next(model.parameters()).device),
+                target=torch.from_numpy(y_batch.copy()).to(next(model.parameters()).device),
+                n_perturb_samples=self.eval_cfg.in_n_perturb_samples,
+            )
+            eval_scores.append(score.detach().cpu().numpy())
 
         # Usability
         if self.eval_cfg.Sparseness:
