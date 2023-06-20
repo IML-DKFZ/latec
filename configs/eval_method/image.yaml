@@ -32,8 +32,8 @@ irof_segmentation_method: "slic"
 irof_perturb_baseline: "mean"
 
 ROAD: True
-road_noise: 0.01
-road_percentages_max: 50
+road_noise: 0.1
+road_percentages_max: 100
 
 Sufficiency: True
 su_threshold: 0.6

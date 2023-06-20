@@ -69,9 +69,9 @@ def explain(cfg: DictConfig) -> Tuple[dict, dict]:
             position=1,
             leave=True,):
 
-            attr.append(xai_methods.attribute(x_batch[i:i+10], y_batch[i:i+10]))
+            attr.append(xai_methods.attribute(x_batch[i:i+cfg.chunk_size], y_batch[i:i+cfg.chunk_size]))
 
-        attr_total.append(np.array(attr))  # obs , XAI, c, w, h
+        attr_total.append(np.vstack(attr))  # obs , XAI, c, w, h
 
     np.savez(
         str(cfg.paths.data_dir)

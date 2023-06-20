@@ -61,6 +61,8 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
     x_batch = x_batch[0 : attr_data[0].shape[0], :]
     y_batch = y_batch[0 : attr_data[0].shape[0]]
 
+    assert attr_data[0].shape[0] >= cfg.chunk_size, "chuncksize larger than n obs"
+
     log.info(f"Instantiating models for <{cfg.data.modality}> data")
     models = ModelsModule(cfg)
 
@@ -105,7 +107,7 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
                 a_batch = a_batch.squeeze()
 
             results = []
-            for i in  tqdm(range(0, x_batch.size(0), cfg.chunk_size),
+            for i in  tqdm(range(0, x_batch.shape[0], cfg.chunk_size),
                 desc=f"Chunkwise (n={cfg.chunk_size}) Computation",
                 colour="RED",
                 position=2,
@@ -113,15 +115,15 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
 
                 results.append(eval_methods.evaluate(
                     model,
-                    x_batch[i:i+10],
-                    y_batch.cpu().numpy()[i:i+10],
-                    a_batch[i:i+10],
+                    x_batch[i:i+cfg.chunk_size],
+                    y_batch.cpu().numpy()[i:i+cfg.chunk_size],
+                    a_batch[i:i+cfg.chunk_size],
                     xai_methods,
                     count_xai,
                     )
                 )
 
-            eval_scores_model.append(np.array(results))
+            eval_scores_model.append(np.vstack(results))
 
         eval_scores_total.append(np.array(eval_scores_model))
 
