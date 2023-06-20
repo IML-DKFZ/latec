@@ -18,3 +18,4 @@ time: ${now:%Y-%m-%d}_${now:%H-%M-%S}
 # passing checkpoint path is necessary for evaluation
 ckpt_path: ${paths.data_dir}/model_weights/
 attr_path: "/attr_imagenet_dataset_14_methods_2023-06-09_14-29-54.npz"
+chunk_size: 10

@@ -104,16 +104,24 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
                 x_batch = x_batch.squeeze().cpu().numpy()
                 a_batch = a_batch.squeeze()
 
-            results = eval_methods.evaluate(
-                model,
-                x_batch,
-                y_batch.cpu().numpy(),
-                a_batch,
-                xai_methods,
-                count_xai,
-            )
+            results = []
+            for i in  tqdm(range(0, x_batch.size(0), cfg.chunk_size),
+                desc=f"Chunkwise (n={cfg.chunk_size}) Computation",
+                colour="RED",
+                position=2,
+                leave=True,):
 
-            eval_scores_model.append(results)
+                results.append(eval_methods.evaluate(
+                    model,
+                    x_batch[i:i+10],
+                    y_batch.cpu().numpy()[i:i+10],
+                    a_batch[i:i+10],
+                    xai_methods,
+                    count_xai,
+                    )
+                )
+
+            eval_scores_model.append(np.array(results))
 
         eval_scores_total.append(np.array(eval_scores_model))
 

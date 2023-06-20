@@ -1,6 +1,6 @@
 _target_: src.data.oct_datamodule.OCTDataModule
 data_dir: ${paths.data_dir}/datasets
-batch_size: 2
+batch_size: 30
 num_workers: 0
 pin_memory: False
 resize: 256

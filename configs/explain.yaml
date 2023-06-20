@@ -16,3 +16,4 @@ time: ${now:%Y-%m-%d}_${now:%H-%M-%S}
 
 # passing checkpoint path is necessary for evaluation
 ckpt_path: ${paths.data_dir}/model_weights/
+chunk_size: 10
