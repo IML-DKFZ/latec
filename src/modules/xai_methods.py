@@ -282,8 +282,9 @@ class XAIMethodsModule:
                 attlrp_hparams = {"method": "transformer_attribution"}
                 self.xai_hparams.append(attlrp_hparams)
             else:
-                lrp = LRP(model, epsilon=self.xai_cfg.lrp_eps, gamma = self.xai_cfg.lrp_gamma
-                          )
+                lrp = LRP(
+                    model, epsilon=self.xai_cfg.lrp_eps, gamma=self.xai_cfg.lrp_gamma
+                )
                 lrp_hparams = {}
                 self.xai_hparams.append(lrp_hparams)
                 self.xai_methods.append(lrp)

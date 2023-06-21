@@ -46,7 +46,12 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
     log.info(
         f"Loading Attributions <{cfg.attr_path}> for modality <{cfg.data.modality}>"
     )
-    attr_data = np.load(str(cfg.paths.data_dir) + "/attribution_maps/" + cfg.data.modality + cfg.attr_path)
+    attr_data = np.load(
+        str(cfg.paths.data_dir)
+        + "/attribution_maps/"
+        + cfg.data.modality
+        + cfg.attr_path
+    )
     attr_data = [
         attr_data["arr_0"],
         attr_data["arr_1"],
@@ -82,21 +87,21 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
         eval_scores_model = []
 
         for count_xai in tqdm(
-            [7],
-            total=1,
+            range(attr_data[count_model].shape[1]),
+            total=attr_data[count_model].shape[1],
             desc=f"{model.__class__.__name__}",
             colour="CYAN",
             position=1,
             leave=True,
         ):
-
             results = []
-            for i in  tqdm(range(0, 2, cfg.chunk_size),
+            for i in tqdm(
+                range(0, x_batch.shape[0], cfg.chunk_size),
                 desc=f"Chunkwise (n={cfg.chunk_size}) Computation",
                 colour="GREEN",
                 position=2,
-                leave=True,):
-
+                leave=True,
+            ):
                 model = model.to(cfg.eval_method.device)
 
                 if torch.is_tensor(x_batch) == False:
@@ -118,12 +123,12 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
 
                 scores = eval_methods.evaluate(
                     model,
-                    x_batch[i:i+cfg.chunk_size],
-                    y_batch.cpu().numpy()[i:i+cfg.chunk_size],
-                    a_batch[i:i+cfg.chunk_size],
+                    x_batch[i : i + cfg.chunk_size],
+                    y_batch.cpu().numpy()[i : i + cfg.chunk_size],
+                    a_batch[i : i + cfg.chunk_size],
                     xai_methods,
                     count_xai,
-                    )
+                )
                 results.append(deepcopy(scores))
 
                 del xai_methods

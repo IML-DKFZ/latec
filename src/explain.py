@@ -59,17 +59,21 @@ def explain(cfg: DictConfig) -> Tuple[dict, dict]:
         position=0,
         leave=True,
     ):
-
         xai_methods = XAIMethodsModule(cfg, model, x_batch)
 
         attr = []
-        for i in  tqdm(range(0, x_batch.size(0), cfg.chunk_size),
+        for i in tqdm(
+            range(0, x_batch.size(0), cfg.chunk_size),
             desc=f"Chunkwise (n={cfg.chunk_size}) Computation",
             colour="CYAN",
             position=1,
-            leave=True,):
-
-            attr.append(xai_methods.attribute(x_batch[i:i+cfg.chunk_size], y_batch[i:i+cfg.chunk_size]))
+            leave=True,
+        ):
+            attr.append(
+                xai_methods.attribute(
+                    x_batch[i : i + cfg.chunk_size], y_batch[i : i + cfg.chunk_size]
+                )
+            )
 
         attr_total.append(np.vstack(attr))  # obs , XAI, c, w, h
 

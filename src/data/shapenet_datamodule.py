@@ -57,7 +57,7 @@ class ShapeNetDataModule(LightningDataModule):
             split="test",
             pre_transform=pretransform,
             transform=self.transforms,
-            #categories=categories
+            # categories=categories
         )
 
         self.g = torch.Generator()

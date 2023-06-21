@@ -242,25 +242,27 @@ class EvalModule:
         eval_scores = []
         # Faithfulness
         if self.eval_cfg.FaithfulnessCorrelation:
-            score = self.FaithfulnessCorrelation(
+            eval_scores.append(
+                self.FaithfulnessCorrelation(
                     model=model,
                     x_batch=x_batch,
                     y_batch=y_batch,
                     a_batch=a_batch,
                     device=self.eval_cfg.device,
                 )
-            
-            eval_scores.append(deepcopy(score))
+            )
 
         if self.eval_cfg.FaithfulnessEstimate:
-            score = self.FaithfulnessEstimate(
+            eval_scores.append(
+                self.FaithfulnessEstimate(
                     model=model,
                     x_batch=x_batch,
                     y_batch=y_batch,
                     a_batch=a_batch,
                     device=self.eval_cfg.device,
                 )
-            eval_scores.append(deepcopy(score))
+            )
+
         if self.eval_cfg.MonotonicityCorrelation:
             eval_scores.append(
                 self.MonotonicityCorrelation(
@@ -419,7 +421,9 @@ class EvalModule:
                 perturb_fn,
                 torch.from_numpy(x_batch.copy()).to(next(model.parameters()).device),
                 torch.from_numpy(a_batch.copy()).to(next(model.parameters()).device),
-                target=torch.from_numpy(y_batch.copy()).to(next(model.parameters()).device),
+                target=torch.from_numpy(y_batch.copy()).to(
+                    next(model.parameters()).device
+                ),
                 n_perturb_samples=self.eval_cfg.in_n_perturb_samples,
             )
             eval_scores.append(score.detach().cpu().numpy())

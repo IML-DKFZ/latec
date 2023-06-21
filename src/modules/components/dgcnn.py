@@ -75,7 +75,7 @@ class DGCNN(nn.Module):
             nn.BatchNorm1d(1024),
             nn.ReLU(),
         )
-        
+
         self.linear1 = nn.Linear(1024 * 2, 512, bias=False)
         self.bn6 = nn.BatchNorm1d(512)
         self.dp1 = nn.Dropout(p=0.5)

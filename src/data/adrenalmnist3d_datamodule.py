@@ -129,7 +129,7 @@ class AdrenalMNSIT3DDataModule(LightningDataModule):
         self.save_hyperparameters(logger=False)
 
         # data transformations
-        self.transforms = Transform3D(mul = "0.5")
+        self.transforms = Transform3D(mul="0.5")
 
         self.data = AdrenalMNIST3D(
             root=data_dir + "/AdrenalMNIST3D/",
