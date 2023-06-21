@@ -109,7 +109,7 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
             results = []
             for i in  tqdm(range(0, x_batch.shape[0], cfg.chunk_size),
                 desc=f"Chunkwise (n={cfg.chunk_size}) Computation",
-                colour="RED",
+                colour="GREEN",
                 position=2,
                 leave=True,):
 
