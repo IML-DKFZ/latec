@@ -5,12 +5,14 @@ import torch
 import pyrootutils
 import numpy as np
 import pytorch_lightning as pl
+import gc
 from tqdm.auto import tqdm
 from omegaconf import DictConfig
 from pytorch_lightning import LightningDataModule
 from modules.models import ModelsModule
 from modules.eval_methods import EvalModule
 from modules.xai_methods import XAIMethodsModule
+from copy import deepcopy
 
 pyrootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
 # ------------------------------------------------------------------------------------ #
@@ -79,41 +81,42 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
     ):
         eval_scores_model = []
 
-        model = model.to(cfg.eval_method.device)
-
         for count_xai in tqdm(
-            range(attr_data[count_model].shape[1]),
-            total=attr_data[count_model].shape[1],
+            [7],
+            total=1,
             desc=f"{model.__class__.__name__}",
             colour="CYAN",
             position=1,
             leave=True,
         ):
-            eval_methods = EvalModule(cfg, model)
-
-            if torch.is_tensor(x_batch) == False:
-                x_batch = torch.from_numpy(x_batch).to(cfg.eval_method.device)
-            else:
-                x_batch = x_batch.to(cfg.eval_method.device)
-
-            xai_methods = XAIMethodsModule(cfg, model, x_batch)
-
-            a_batch = attr_data[count_model][:, count_xai, :]
-
-            if cfg.data.modality == "Image" or cfg.data.modality == "Point_Cloud":
-                x_batch = x_batch.cpu().numpy()
-            elif cfg.data.modality == "Voxel":
-                x_batch = x_batch.squeeze().cpu().numpy()
-                a_batch = a_batch.squeeze()
 
             results = []
-            for i in  tqdm(range(0, x_batch.shape[0], cfg.chunk_size),
+            for i in  tqdm(range(0, 2, cfg.chunk_size),
                 desc=f"Chunkwise (n={cfg.chunk_size}) Computation",
                 colour="GREEN",
                 position=2,
                 leave=True,):
 
-                results.append(eval_methods.evaluate(
+                model = model.to(cfg.eval_method.device)
+
+                if torch.is_tensor(x_batch) == False:
+                    x_batch = torch.from_numpy(x_batch).to(cfg.eval_method.device)
+                else:
+                    x_batch = x_batch.to(cfg.eval_method.device)
+
+                xai_methods = XAIMethodsModule(cfg, model, x_batch)
+
+                a_batch = attr_data[count_model][:, count_xai, :]
+
+                if cfg.data.modality == "Image" or cfg.data.modality == "Point_Cloud":
+                    x_batch = x_batch.cpu().numpy()
+                elif cfg.data.modality == "Voxel":
+                    x_batch = x_batch.squeeze().cpu().numpy()
+                    a_batch = a_batch.squeeze()
+
+                eval_methods = EvalModule(cfg, model)
+
+                scores = eval_methods.evaluate(
                     model,
                     x_batch[i:i+cfg.chunk_size],
                     y_batch.cpu().numpy()[i:i+cfg.chunk_size],
@@ -121,9 +124,19 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
                     xai_methods,
                     count_xai,
                     )
-                )
+                results.append(deepcopy(scores))
+
+                del xai_methods
+                del eval_methods
+                del scores
+
+                gc.collect()
 
             eval_scores_model.append(np.vstack(results))
+
+            del model
+
+            gc.collect()
 
         eval_scores_total.append(np.array(eval_scores_model))
 

@@ -25,6 +25,7 @@ from quantus import (
 from modules.components.insertion_deletion import InsertionDeletion
 from quantus.functions.perturb_func import gaussian_noise
 from captum.metrics import infidelity
+from copy import deepcopy
 
 # disable_warnings = True
 
@@ -241,26 +242,25 @@ class EvalModule:
         eval_scores = []
         # Faithfulness
         if self.eval_cfg.FaithfulnessCorrelation:
-            eval_scores.append(
-                self.FaithfulnessCorrelation(
+            score = self.FaithfulnessCorrelation(
                     model=model,
                     x_batch=x_batch,
                     y_batch=y_batch,
                     a_batch=a_batch,
                     device=self.eval_cfg.device,
                 )
-            )
+            
+            eval_scores.append(deepcopy(score))
 
         if self.eval_cfg.FaithfulnessEstimate:
-            eval_scores.append(
-                self.FaithfulnessEstimate(
+            score = self.FaithfulnessEstimate(
                     model=model,
                     x_batch=x_batch,
                     y_batch=y_batch,
                     a_batch=a_batch,
                     device=self.eval_cfg.device,
                 )
-            )
+            eval_scores.append(deepcopy(score))
         if self.eval_cfg.MonotonicityCorrelation:
             eval_scores.append(
                 self.MonotonicityCorrelation(
