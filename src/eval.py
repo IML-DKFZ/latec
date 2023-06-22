@@ -106,6 +106,8 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
 
                 if torch.is_tensor(x_batch) == False:
                     x_batch = torch.from_numpy(x_batch).to(cfg.eval_method.device)
+                    if cfg.data.modality == "Voxel":
+                        x_batch = x_batch.unsqueeze(1)
                 else:
                     x_batch = x_batch.to(cfg.eval_method.device)
 
