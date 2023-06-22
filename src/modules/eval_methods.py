@@ -419,8 +419,8 @@ class EvalModule:
             score = infidelity(
                 model,
                 perturb_fn,
-                torch.from_numpy(x_batch.copy()).to(next(model.parameters()).device),
-                torch.from_numpy(a_batch.copy()).to(next(model.parameters()).device),
+                torch.from_numpy(x_batch.copy()).to(next(model.parameters()).device).unsqueeze(1) if self.modality=="Voxel" else torch.from_numpy(x_batch.copy()).to(next(model.parameters()).device),
+                torch.from_numpy(a_batch.copy()).to(next(model.parameters()).device).unsqueeze(1) if self.modality=="Voxel" else torch.from_numpy(a_batch.copy()).to(next(model.parameters()).device),
                 target=torch.from_numpy(y_batch.copy()).to(
                     next(model.parameters()).device
                 ),
