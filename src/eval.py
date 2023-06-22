@@ -116,8 +116,7 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
                 a_batch = attr_data[count_model][:, count_xai, :]
 
                 if np.all((a_batch[i : i + cfg.chunk_size] == 0)):
-                    for j in range(cfg.chunk_size):
-                        a_batch[i : i + cfg.chunk_size][j,0,0,0] = 0.0000000001
+                    a_batch[i : i + cfg.chunk_size][:,0,0] = 0.0000000001
 
                 if cfg.data.modality == "Image" or cfg.data.modality == "Point_Cloud":
                     x_batch = x_batch.cpu().numpy()
