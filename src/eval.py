@@ -151,6 +151,7 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
         eval_scores_total.append(np.array(eval_scores_model)) # xai, eval, obs
 
     eval_scores_total = np.array(eval_scores_total) # model, xai, eval, obs
+    print(eval_scores_total.shape)
 
     np.savez(
         str(cfg.paths.data_dir)
@@ -158,9 +159,7 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
         + cfg.data.modality
         + "/attr_"
         + str(datamodule.__name__)
-        + "_dataset_"
-        + str(eval_scores_total.shape[2])
-        + "_methods"
+        + "_dataset"
         + ".npz",
         eval_scores_total,
     )
