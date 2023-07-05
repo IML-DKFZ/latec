@@ -48,14 +48,14 @@ class OCTDataModule(LightningDataModule):
         )
 
         self.g = torch.Generator()
-        self.g.manual_seed(0)
+        self.g.manual_seed(42)
 
     @property
     def num_classes(self):
         return 4
 
     def seed_worker(worker_id):
-        worker_seed = torch.initial_seed() % 2**32
+        worker_seed = torch.initial_seed() % 2**35
         np.random.seed(worker_seed)
         random.seed(worker_seed)
 

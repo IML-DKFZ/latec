@@ -140,12 +140,14 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
                 del eval_methods
                 del scores
 
+                torch.cuda.empty_cache()
                 gc.collect()
 
             eval_scores_model.append(np.hstack(results))
 
         del model
 
+        torch.cuda.empty_cache()
         gc.collect()
 
         eval_scores_total.append(np.array(eval_scores_model)) # xai, eval, obs

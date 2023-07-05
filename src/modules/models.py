@@ -17,7 +17,7 @@ from modules.components.pc_transformer import PCT
 
 def load_from_lightning(model, model_filepath):
     # load the checkpoint
-    pretrained_dict = torch.load(model_filepath)
+    pretrained_dict = torch.load(model_filepath,map_location= "cpu" if torch.cuda.is_available() == False else "cuda:0")
     if "state_dict" in pretrained_dict.keys():
         pretrained_dict = pretrained_dict["state_dict"]
 
