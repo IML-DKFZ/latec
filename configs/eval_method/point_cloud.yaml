@@ -1,41 +1,41 @@
 # Faithfulness
 
-FaithfulnessCorrelation: True # -1 to 1
+FaithfulnessCorrelation: False # -1 to 1
 fc_nr_runs: 100
 fc_subset_size: 32
 fc_perturb_baseline: "black"
 
-FaithfulnessEstimate: True
+FaithfulnessEstimate: False
 fe_features_in_step: 32
 fe_perturb_baseline: "black"
 
-MonotonicityCorrelation: True
+MonotonicityCorrelation: False
 mc_nr_samples: 10
 mc_features_in_step: 256
 mc_perturb_baseline: "uniform"
 
-PixelFlipping: True
+PixelFlipping: False
 pf_features_in_step: 32
 pf_perturb_baseline: "black"
 
-RegionPerturbation: True
+RegionPerturbation: False
 rp_patch_size: 3
 rp_regions_evaluation: 32
 rp_perturb_baseline: "uniform"
 
-InsertionDeletion: True
+InsertionDeletion: False
 id_pixel_batch_size: 50
 id_sigma: 0.08
 
-IROF: False
+IROF: False # Always
 irof_segmentation_method: "slic"
 irof_perturb_baseline: "mean"
 
-ROAD: True
+ROAD: False
 road_noise: 0.01
 road_percentages_max: 50
 
-Sufficiency: True
+Sufficiency: False
 su_threshold: 0.6
 
 
@@ -46,34 +46,34 @@ lle_nr_samples: 5
 lle_perturb_std: 0.02
 lle_perturb_mean: 0.0
 
-MaxSensitivity: True
+MaxSensitivity: False
 ms_nr_samples: 10
 ms_lower_bound: 0.2
 
-Continuity: True
+Continuity: False
 co_patch_size: 3
 co_nr_steps: 20
 co_perturb_baseline: "uniform"
 
-RelativeInputStability: True 
+RelativeInputStability: False 
 ris_nr_samples: 5
 
-RelativeOutputStability: True
+RelativeOutputStability: False
 ros_nr_samples: 5
 
-RelativeRepresentationStability: True
+RelativeRepresentationStability: False
 rrs_nr_samples: 5
 
-Infidelity: True
+Infidelity: False
 in_n_perturb_samples: 50
 
 # Usability
 
-Sparseness: True
+Sparseness: False
 
-Complexity: True
+Complexity: False
 
-EffectiveComplexity: True
+EffectiveComplexity: False
 ec_eps: 0.00001
 
 # util

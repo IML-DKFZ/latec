@@ -3,7 +3,7 @@ occlusion: True
 occ_strides: 1
 occ_sliding_window_shapes: 3
 occ_baselines: 0
-perturbations_per_eval: 42
+perturbations_per_eval: 1
 
 lime: True
 lime_alpha: 4.0
@@ -24,16 +24,16 @@ guided_backprob: True
 gcam: False
 
 scam: False
-scam_batch_size: 64
+scam_batch_size: 16
 
 gcampp: False
 
 ig: True
 ig_baselines: 0
-ig_n_steps: 30
+ig_n_steps: 16
 
 eg: True
-eg_n_samples: 40 # 80
+eg_n_samples: 16 # 80
 eg_stdevs: 0.001 # 0.001
 
 deeplift: True

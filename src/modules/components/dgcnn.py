@@ -133,13 +133,13 @@ class DGCNN(nn.Module):
         x = self.conv5(
             x
         )  # (batch_size, 64+64+128+256, num_points) -> (batch_size, emb_dims, num_points)
-        x1 = F.adaptive_max_pool1d(x, 1).view(
+        x5 = F.adaptive_max_pool1d(x, 1).view(
             batch_size, -1
         )  # (batch_size, emb_dims, num_points) -> (batch_size, emb_dims)
-        x2 = F.adaptive_avg_pool1d(x, 1).view(
+        x6 = F.adaptive_avg_pool1d(x, 1).view(
             batch_size, -1
         )  # (batch_size, emb_dims, num_points) -> (batch_size, emb_dims)
-        x = torch.cat((x1, x2), 1)  # (batch_size, emb_dims*2)
+        x = torch.cat((x5, x6), 1)  # (batch_size, emb_dims*2)
 
         x = F.leaky_relu(
             self.bn6(self.linear1(x)), negative_slope=0.2
