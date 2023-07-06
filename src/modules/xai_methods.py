@@ -257,7 +257,7 @@ class XAIMethodsModule:
         if self.xai_cfg.deeplift_shap:
             dlshap = DeepLiftShap(model)
             self.xai_methods.append(dlshap)
-            dlshap_hparams = {"baselines": self.x_batch}
+            dlshap_hparams = {"baselines": self.x_batch if self.x_batch.shape[0] < 16 else self.x_batch[0:16]}
             self.xai_hparams.append(dlshap_hparams)
 
         if self.xai_cfg.lrp or self.xai_cfg.attention:

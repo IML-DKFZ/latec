@@ -43,7 +43,7 @@ su_threshold: 0.6
 
 LocalLipschitzEstimate: True
 lle_nr_samples: 5
-lle_perturb_std: 0.2
+lle_perturb_std: 0.00002 # 0.2 , oct: 0.00002
 lle_perturb_mean: 0.0
 
 MaxSensitivity: True

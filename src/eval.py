@@ -159,7 +159,7 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
         str(cfg.paths.data_dir)
         + "/evaluation/"
         + cfg.data.modality
-        + "/attr_"
+        + "/eval_"
         + str(datamodule.__name__)
         + "_dataset"
         + ".npz",

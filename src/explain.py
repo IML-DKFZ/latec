@@ -81,7 +81,7 @@ def explain(cfg: DictConfig) -> Tuple[dict, dict]:
         str(cfg.paths.data_dir)
         + "/attribution_maps/"
         + cfg.data.modality
-        + "/attr_"
+        + "/explain_"
         + str(datamodule.__name__)
         + "_dataset_"
         + str(attr_total[0].shape[1])
