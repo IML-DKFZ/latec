@@ -36,7 +36,7 @@ road_noise: 0.01
 road_percentages_max: 50
 
 Sufficiency: True
-su_threshold: 0.6
+su_threshold: 0.75
 
 
 # Robustness

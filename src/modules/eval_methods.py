@@ -238,7 +238,7 @@ class EvalModule:
                 normalise=self.eval_cfg.normalise,
             )
 
-    def evaluate(self, model, x_batch, y_batch, a_batch, xai_methods, count_xai):
+    def evaluate(self, model, x_batch, y_batch, a_batch, xai_methods, count_xai, custom_batch):
         eval_scores = []
         # Faithfulness
         if self.eval_cfg.FaithfulnessCorrelation:
@@ -332,6 +332,7 @@ class EvalModule:
                     x_batch=x_batch,
                     y_batch=y_batch,
                     a_batch=a_batch,
+                    custom_batch=custom_batch,
                     device=self.eval_cfg.device,
                 )
             )

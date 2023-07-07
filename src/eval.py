@@ -133,6 +133,7 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
                     a_batch[i : i + cfg.chunk_size],
                     xai_methods,
                     count_xai,
+                    custom_batch= [x_batch, y_batch, a_batch, list(range(i,i + cfg.chunk_size))],
                 )
                 results.append(deepcopy(scores))
 
