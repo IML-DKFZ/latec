@@ -155,8 +155,10 @@ class BaseCAM:
                 eigen_smooth,
             )
 
-            if self.include_negative == False:
-                cam = np.maximum(cam, 0)
+            if self.include_negative == True:
+                cam = np.abs(cam)
+
+            cam = np.maximum(cam, 0)
 
             result = []
             for img in cam:  # Removed min max rescaling

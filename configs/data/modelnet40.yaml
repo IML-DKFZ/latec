@@ -1,6 +1,6 @@
 _target_: src.data.modelnet40_datamodule.ModelNet40DataModule
 data_dir: ${paths.data_dir}/datasets
-batch_size: 30
+batch_size: 50
 num_workers: 0
 pin_memory: False
 

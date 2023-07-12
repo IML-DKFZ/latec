@@ -46,16 +46,16 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
     log.info(
         f"Loading Attributions <{cfg.attr_path}> for modality <{cfg.data.modality}>"
     )
-    attr_data = np.load(
+    explain_data = np.load(
         str(cfg.paths.data_dir)
-        + "/attribution_maps/"
+        + "/explanation_maps/"
         + cfg.data.modality
         + cfg.attr_path
     )
-    attr_data = [
-        attr_data["arr_0"],
-        attr_data["arr_1"],
-        attr_data["arr_2"],
+    explain_data = [
+        explain_data["arr_0"],
+        explain_data["arr_1"],
+        explain_data["arr_2"],
     ]  # obs, xaimethods, c , w, h
 
     log.info(f"Instantiating datamodule <{cfg.data._target_}>")
@@ -65,15 +65,15 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
     with torch.no_grad():
         x_batch, y_batch = next(iter(dataloader))
 
-    x_batch = x_batch[0 : attr_data[0].shape[0], :]
-    y_batch = y_batch[0 : attr_data[0].shape[0]]
+    x_batch = x_batch[0 : explain_data[0].shape[0], :]
+    y_batch = y_batch[0 : explain_data[0].shape[0]]
 
-    assert attr_data[0].shape[0] >= cfg.chunk_size, "chuncksize larger than n obs"
+    assert explain_data[0].shape[0] >= cfg.chunk_size, "chuncksize larger than n obs"
 
     log.info(f"Instantiating models for <{cfg.data.modality}> data")
     models = ModelsModule(cfg)
 
-    eval_scores_total = []
+    eval_data = []
 
     log.info(f"Starting Evaluation over each Model")
     for count_model, model in tqdm(
@@ -84,11 +84,11 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
         position=0,
         leave=True,
     ):
-        eval_scores_model = []
+        eval_data_model = []
 
         for count_xai in tqdm(
-            range(attr_data[count_model].shape[1]),
-            total=attr_data[count_model].shape[1],
+            range(explain_data[count_model].shape[1]),
+            total=explain_data[count_model].shape[1],
             desc=f"{model.__class__.__name__}",
             colour="CYAN",
             position=1,
@@ -113,7 +113,7 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
 
                 xai_methods = XAIMethodsModule(cfg, model, x_batch)
 
-                a_batch = attr_data[count_model][:, count_xai, :]
+                a_batch = explain_data[count_model][:, count_xai, :]
 
                 if np.all((a_batch[i : i + cfg.chunk_size] == 0)):
                     a_batch[i : i + cfg.chunk_size][:,0,0] = 0.0000000001
@@ -144,17 +144,14 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
                 torch.cuda.empty_cache()
                 gc.collect()
 
-            eval_scores_model.append(np.hstack(results))
+            eval_data_model.append(np.hstack(results))
 
         del model
 
         torch.cuda.empty_cache()
         gc.collect()
 
-        eval_scores_total.append(np.array(eval_scores_model)) # xai, eval, obs
-
-    eval_scores_total = np.array(eval_scores_total) # model, xai, eval, obs
-    print(eval_scores_total.shape)
+        eval_data.append(np.array(eval_data_model)) # xai, eval, obs
 
     np.savez(
         str(cfg.paths.data_dir)
@@ -164,7 +161,9 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
         + str(datamodule.__name__)
         + "_dataset"
         + ".npz",
-        eval_scores_total,
+        eval_data[0],
+        eval_data[1],
+        eval_data[2],
     )
 
 

@@ -49,7 +49,7 @@ def explain(cfg: DictConfig) -> Tuple[dict, dict]:
 
     log.info(f"Instantiating models for <{cfg.data.modality}> data")
     models = ModelsModule(cfg)
-    attr_total = []
+    explain_data = []
 
     log.info(f"Starting Attribution computation over each Model and XAI Method")
     for model in tqdm(
@@ -61,7 +61,7 @@ def explain(cfg: DictConfig) -> Tuple[dict, dict]:
     ):
         xai_methods = XAIMethodsModule(cfg, model, x_batch)
 
-        attr = []
+        explain_data_model = []
         for i in tqdm(
             range(0, x_batch.size(0), cfg.chunk_size),
             desc=f"Chunkwise (n={cfg.chunk_size}) Computation",
@@ -69,28 +69,28 @@ def explain(cfg: DictConfig) -> Tuple[dict, dict]:
             position=1,
             leave=True,
         ):
-            attr.append(
+            explain_data_model.append(
                 xai_methods.attribute(
                     x_batch[i : i + cfg.chunk_size], y_batch[i : i + cfg.chunk_size]
                 )
             )
 
-        attr_total.append(np.vstack(attr))  # obs , XAI, c, w, h
+        explain_data.append(np.vstack(explain_data_model))  # obs , XAI, c, w, h
 
     np.savez(
         str(cfg.paths.data_dir)
-        + "/attribution_maps/"
+        + "/explanation_maps/"
         + cfg.data.modality
         + "/explain_"
         + str(datamodule.__name__)
         + "_dataset_"
-        + str(attr_total[0].shape[1])
+        + str(explain_data[0].shape[1])
         + "_methods_"
         + cfg.time
         + ".npz",
-        attr_total[0],
-        attr_total[1],
-        attr_total[2],
+        explain_data[0],
+        explain_data[1],
+        explain_data[2],
     )
 
 

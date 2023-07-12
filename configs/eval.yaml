@@ -17,5 +17,5 @@ time: ${now:%Y-%m-%d}_${now:%H-%M-%S}
 
 # passing checkpoint path is necessary for evaluation
 ckpt_path: ${paths.data_dir}/model_weights/
-attr_path: "/attr_coma_dataset_11_methods_2023-06-20_14-51-11.npz"
+attr_path: "/explain_coma_dataset_11_methods_2023-06-20_14-51-11.npz"
 chunk_size: 2

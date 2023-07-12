@@ -296,6 +296,7 @@ class XAIMethodsModule:
             attr.append(
                 self.xai_methods[i].attribute(inputs=x, target=y, **self.xai_hparams[i])
             )
+            
 
         attr_total = np.asarray(
             [i.detach().numpy() if torch.is_tensor(i) else i for i in attr]
