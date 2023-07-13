@@ -157,8 +157,8 @@ class XAIMethodsModule:
                     )
                     if self.modality == "Voxel"
                     else (
-                        1,
                         self.xai_cfg.occ_sliding_window_shapes,
+                        1,
                     )
                 ),
                 "baselines": self.xai_cfg.occ_baselines,
@@ -296,6 +296,8 @@ class XAIMethodsModule:
             attr.append(
                 self.xai_methods[i].attribute(inputs=x, target=y, **self.xai_hparams[i])
             )
+
+
             
 
         attr_total = np.asarray(

@@ -83,7 +83,7 @@ def explain(cfg: DictConfig) -> Tuple[dict, dict]:
         + cfg.data.modality
         + "/explain_"
         + str(datamodule.__name__)
-        + "_dataset_"
+        + "_"
         + str(explain_data[0].shape[1])
         + "_methods_"
         + cfg.time

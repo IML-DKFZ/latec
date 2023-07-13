@@ -3,7 +3,7 @@ occlusion: True
 occ_strides: 1
 occ_sliding_window_shapes: 3
 occ_baselines: 0
-perturbations_per_eval: 1
+perturbations_per_eval: 60
 
 lime: True
 lime_alpha: 4.0
