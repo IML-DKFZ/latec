@@ -217,7 +217,7 @@ class XAIMethodsModule:
             gcam_hparams = {}
             self.xai_hparams.append(gcam_hparams)
         if self.xai_cfg.scam:
-            scam = ScoreCAM(model, layer, reshape_transform=reshap, include_negative=include_negative)
+            scam = ScoreCAM(model, layer, reshape_transform=reshap)
             scam.batch_size = self.xai_cfg.scam_batch_size
             self.xai_methods.append(scam)
             scam_hparams = {}
