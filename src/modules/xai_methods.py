@@ -112,7 +112,7 @@ class XAIMethodsModule:
                 if self.modality == "Image"
                 else reshape_transform_3D
             )
-            include_negative = True
+            include_negative = False
         elif model.__class__.__name__ == "EfficientNet3D":
             layer = [model._blocks[-13]]
             reshap = None
@@ -132,7 +132,7 @@ class XAIMethodsModule:
         elif model.__class__.__name__ == "PCT":
             layer = [model.pt_last.sa4.after_norm]
             reshap = reshape_transform_2D
-            include_negative = True
+            #include_negative = True
 
         self.xai_methods = []
         self.xai_hparams = []
@@ -217,7 +217,7 @@ class XAIMethodsModule:
             gcam_hparams = {}
             self.xai_hparams.append(gcam_hparams)
         if self.xai_cfg.scam:
-            scam = ScoreCAM(model, layer, reshape_transform=reshap)
+            scam = ScoreCAM(model, layer, reshape_transform=reshap, include_negative=include_negative)
             scam.batch_size = self.xai_cfg.scam_batch_size
             self.xai_methods.append(scam)
             scam_hparams = {}
