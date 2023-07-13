@@ -93,7 +93,7 @@ def feature_mask(modality="Image"):
 class XAIMethodsModule:
     def __init__(self, cfg, model, x_batch):
         self.modality = cfg.data.modality
-        self.xai_cfg = cfg.xai_method
+        self.xai_cfg = cfg.explain_method
         self.x_batch = x_batch
         self.model = model
 

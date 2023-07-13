@@ -6,7 +6,7 @@ defaults:
   - logger: null
   - paths: default.yaml
   - eval_method: point_cloud.yaml
-  - xai_method: point_cloud.yaml
+  - explain_method: point_cloud.yaml
   - extras: default.yaml
   - hydra: default.yaml
 
