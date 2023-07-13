@@ -23,7 +23,6 @@ from quantus import (
     EffectiveComplexity,
 )
 from modules.components.insertion_deletion import InsertionDeletion
-from quantus.functions.perturb_func import gaussian_noise
 from captum.metrics import infidelity
 from copy import deepcopy
 
@@ -131,13 +130,13 @@ class EvalModule:
         if self.eval_cfg.ROAD:
             self.ROAD = ROAD(
                 noise=self.eval_cfg.road_noise,
-                perturb_func=quantus.perturb_func.gaussian_noise
-                if self.modality == "Point_Cloud"
-                else quantus.perturb_func.noisy_linear_imputation,
+                perturb_func= quantus.perturb_func.noisy_linear_imputation
+                if self.modality == "Image"
+                else quantus.perturb_func.gaussian_noise,
                 percentages=list(range(1, self.eval_cfg.road_percentages_max, 2)),
                 perturb_func_kwargs={"indexed_axes": (0, 1)}
                 if self.modality == "Point_Cloud"
-                else None,
+                else {"indexed_axes": (0, 1, 2)} if self.modality == "Voxel" else None,
                 display_progressbar=False,
                 disable_warnings=True,
                 normalise=self.eval_cfg.normalise,
@@ -192,6 +191,7 @@ class EvalModule:
                 nr_samples=self.eval_cfg.ris_nr_samples,
                 disable_warnings=True,
                 normalise=self.eval_cfg.normalise,
+                return_nan_when_prediction_changes = False,
             )
 
         if self.eval_cfg.RelativeOutputStability:
@@ -199,6 +199,7 @@ class EvalModule:
                 nr_samples=self.eval_cfg.ros_nr_samples,
                 disable_warnings=True,
                 normalise=self.eval_cfg.normalise,
+                return_nan_when_prediction_changes = False,
             )
 
         if self.eval_cfg.RelativeRepresentationStability:
@@ -207,6 +208,7 @@ class EvalModule:
                 layer_names=layer,
                 disable_warnings=True,
                 normalise=self.eval_cfg.normalise,
+                return_nan_when_prediction_changes = False,
             )
 
         # if self.eval_cfg.Infidelity:

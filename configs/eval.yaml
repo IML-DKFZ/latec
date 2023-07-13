@@ -2,7 +2,7 @@
 
 defaults:
   - _self_
-  - data: coma.yaml # choose datamodule with `test_dataloader()` for evaluation
+  - data: modelnet40.yaml # choose datamodule with `test_dataloader()` for evaluation
   - logger: null
   - paths: default.yaml
   - eval_method: point_cloud.yaml
@@ -17,5 +17,5 @@ time: ${now:%Y-%m-%d}_${now:%H-%M-%S}
 
 # passing checkpoint path is necessary for evaluation
 ckpt_path: ${paths.data_dir}/model_weights/
-attr_path: "/explain_coma_11_methods_2023-07-13_11-03-16.npz"
+attr_path: "/explain_modelnet40_11_methods_2023-07-13_11-03-03.npz"
 chunk_size: 2

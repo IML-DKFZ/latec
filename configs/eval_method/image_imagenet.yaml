@@ -56,13 +56,13 @@ co_nr_steps: 20
 co_perturb_baseline: "uniform"
 
 RelativeInputStability: True
-ris_nr_samples: 5
+ris_nr_samples: 10
 
 RelativeOutputStability: True
-ros_nr_samples: 5
+ros_nr_samples: 10
 
 RelativeRepresentationStability: True
-rrs_nr_samples: 5
+rrs_nr_samples: 10
 
 Infidelity: True
 in_n_perturb_samples: 50
