@@ -25,25 +25,26 @@ rp_perturb_baseline: "uniform"
 
 InsertionDeletion: True
 id_pixel_batch_size: 50
-id_sigma: 0.08
+id_sigma: 0.2
+id_kernel_size: 1
 
-IROF: False # Always
-irof_segmentation_method: "slic"
-irof_perturb_baseline: "mean"
+IROF: True
+irof_segmentation_method: "knn"
+irof_perturb_baseline: "black"
 
 ROAD: True
-road_noise: 0.2 # coma 0.01
+road_noise: 0.3
 road_percentages_max: 100
 
 Sufficiency: True
-su_threshold: 0.75
+su_threshold: 0.6
 
 
 # Robustness
 
 LocalLipschitzEstimate: True
 lle_nr_samples: 5
-lle_perturb_std: 0.02
+lle_perturb_std: 0.1
 lle_perturb_mean: 0.0
 
 MaxSensitivity: True
@@ -74,8 +75,8 @@ Sparseness: True
 Complexity: True
 
 EffectiveComplexity: True
-ec_eps: 0.00001
+ec_eps: 0.001
 
 # util
-normalise: False
+normalise: True
 device: "cuda:0"

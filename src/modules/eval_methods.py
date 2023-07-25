@@ -115,6 +115,8 @@ class EvalModule:
             self.InsertionDeletion = InsertionDeletion(
                 pixel_batch_size=self.eval_cfg.id_pixel_batch_size,
                 sigma=self.eval_cfg.id_sigma,
+                kernel_size=self.eval_cfg.id_kernel_size,
+                modality = self.modality,
             )
 
         if self.eval_cfg.IROF:
@@ -125,6 +127,7 @@ class EvalModule:
                 return_aggregate=False,
                 disable_warnings=True,
                 normalise=self.eval_cfg.normalise,
+                modality = self.modality,
             )
 
         if self.eval_cfg.ROAD:
@@ -148,6 +151,7 @@ class EvalModule:
                 return_aggregate=False,
                 disable_warnings=True,
                 normalise=self.eval_cfg.normalise,
+                modality = self.modality,
             )
 
         # Robustness
@@ -184,6 +188,7 @@ class EvalModule:
                 similarity_func=quantus.similarity_func.correlation_spearman,
                 disable_warnings=True,
                 normalise=self.eval_cfg.normalise,
+                modality = self.modality,
             )
 
         if self.eval_cfg.RelativeInputStability:
@@ -276,25 +281,24 @@ class EvalModule:
                 )
             )
         if self.eval_cfg.PixelFlipping:
-            eval_scores.append(
-                self.PixelFlipping(
-                    model=model,
-                    x_batch=x_batch,
-                    y_batch=y_batch,
-                    a_batch=a_batch,
-                    device=self.eval_cfg.device,
-                )
+            _ = self.PixelFlipping(
+                model=model,
+                x_batch=x_batch,
+                y_batch=y_batch,
+                a_batch=a_batch,
+                device=self.eval_cfg.device,
             )
+            eval_scores.append(self.PixelFlipping.get_auc_score)
+
         if self.eval_cfg.RegionPerturbation:
-            eval_scores.append(
-                self.RegionPerturbation(
+                _ = self.RegionPerturbation(
                     model=model,
                     x_batch=x_batch,
                     y_batch=y_batch,
                     a_batch=a_batch,
                     device=self.eval_cfg.device,
                 )
-            )
+                eval_scores.append(self.RegionPerturbation.get_auc_score)
 
         if self.eval_cfg.InsertionDeletion:
             ins_auc, del_auc = self.InsertionDeletion.evaluate(
@@ -315,17 +319,16 @@ class EvalModule:
             )
 
         if self.eval_cfg.ROAD:
-            eval_scores.append(
-                self.ROAD(
-                    model=model,
-                    x_batch=x_batch,
-                    y_batch=y_batch,
-                    a_batch=np.expand_dims(np.mean(a_batch, 1), 1)
-                    if self.modality == "Image"
-                    else a_batch,  # does not work with 3 channel attribution!
-                    device=self.eval_cfg.device,
-                )
+            _ = self.ROAD(
+                model=model,
+                x_batch=x_batch,
+                y_batch=y_batch,
+                a_batch=np.expand_dims(np.mean(a_batch, 1), 1)
+                if self.modality == "Image"
+                else a_batch,  # does not work with 3 channel attribution!
+                device=self.eval_cfg.device,
             )
+            eval_scores.append(self.ROAD.get_auc_score)
 
         if self.eval_cfg.Sufficiency:
             eval_scores.append(
@@ -367,17 +370,16 @@ class EvalModule:
             )
 
         if self.eval_cfg.Continuity:
-            eval_scores.append(
-                self.Continuity(
-                    model=model,
-                    x_batch=x_batch,
-                    y_batch=y_batch,
-                    a_batch=a_batch,
-                    explain_func=xai_methods.xai_methods[count_xai].attribute,
-                    explain_func_kwargs=xai_methods.xai_hparams[count_xai],
-                    device=self.eval_cfg.device,
-                )
+            _ = self.Continuity(
+                model=model,
+                x_batch=x_batch,
+                y_batch=y_batch,
+                a_batch=a_batch,
+                explain_func=xai_methods.xai_methods[count_xai].attribute,
+                explain_func_kwargs=xai_methods.xai_hparams[count_xai],
+                device=self.eval_cfg.device,
             )
+            eval_scores.append(self.Continuity.aggregated_score)
 
         if self.eval_cfg.RelativeInputStability:
             eval_scores.append(

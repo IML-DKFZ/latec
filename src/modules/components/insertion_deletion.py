@@ -18,10 +18,11 @@ class BaseEvaluation(metaclass=ABCMeta):
 
 
 class InsertionDeletion(BaseEvaluation):
-    def __init__(self, pixel_batch_size=10, sigma=5.0):
+    def __init__(self, pixel_batch_size=10, sigma=5.0,kernel_size=9, modality = "image"):
         self.sigma = sigma
         self.pixel_batch_size = pixel_batch_size
-        self.gaussian_blurr = GaussianBlur(9, sigma)
+        self.gaussian_blurr = GaussianBlur(kernel_size, sigma)
+        self.modality = modality
 
     @torch.no_grad()
     def evaluate(self, model, x_batch, y_batch, a_batch):  # noqa
@@ -65,7 +66,7 @@ class InsertionDeletion(BaseEvaluation):
             )
 
             # apply insertion game
-            if len(x_batch.shape) > 3:
+            if self.modality == "Image":
                 blurred_input = self.gaussian_blurr(x_batch)
             else:
                 blurred_input = x_batch + (torch.randn_like(x_batch) * self.sigma)
@@ -98,22 +99,30 @@ class InsertionDeletion(BaseEvaluation):
         replaced_pixels = 0
         while replaced_pixels < num_pixels:
             perturbed_inputs = []
-            for i in range(80):
-                batch = min(num_pixels - replaced_pixels, self.pixel_batch_size)
+            batch = min(num_pixels - replaced_pixels, self.pixel_batch_size)
 
-                # perturb # of pixel_batch_size pixels
-                for pixel in range(batch):
+            # perturb # of pixel_batch_size pixels
+            for pixel in range(batch):
+                if self.modality == "Voxel":
                     perturb_index = (
-                        indices[0][replaced_pixels + pixel],
-                        indices[1][replaced_pixels + pixel],
+                        indices[-3][replaced_pixels + pixel], #x
+                        indices[-2][replaced_pixels + pixel], #y
+                        indices[-1][replaced_pixels + pixel], #z
                     )
 
-                    # perturb input using given pixels
-                    perturber.perturb(perturb_index[0], perturb_index[1])
-                perturbed_inputs.append(perturber.get_current())
-                replaced_pixels += batch
-                if replaced_pixels == num_pixels:
-                    break
+                    perturber.perturb(r = perturb_index[0], c = perturb_index[1], v = perturb_index[2], modality = self.modality)
+                else:
+                    perturb_index = (
+                        indices[-2][replaced_pixels + pixel], #x
+                        indices[-1][replaced_pixels + pixel], #y
+                    )
+
+                    perturber.perturb(r = perturb_index[0], c = perturb_index[1], modality = self.modality)
+
+            perturbed_inputs.append(perturber.get_current())
+            replaced_pixels += batch
+            if replaced_pixels == num_pixels:
+                break
 
             # get score after perturb
             device = next(self.classifier.parameters()).device
@@ -156,11 +165,13 @@ class PixelPerturber(Perturber):
         self.current = inp.clone()
         self.baseline = baseline
 
-    def perturb(self, r: int, c: int):
-        if len(self.baseline.shape) > 2:
+    def perturb(self, modality, r: int, c: int, v = 0):
+        if modality == "Image":
             self.current[:, r, c] = self.baseline[:, r, c]
-        else:
+        elif modality == "Point_Cloud":
             self.current[r, c] = self.baseline[r, c]
+        elif modality == "Voxel":
+            self.current[r, c, v] = self.baseline[r, c, v]
 
     def get_current(self) -> torch.Tensor:
         return self.current

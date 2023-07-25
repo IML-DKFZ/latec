@@ -25,7 +25,8 @@ rp_perturb_baseline: "uniform"
 
 InsertionDeletion: True
 id_pixel_batch_size: 50
-id_sigma: 5.0
+id_sigma: 120.0
+id_kernel_size: 39
 
 IROF: True
 irof_segmentation_method: "slic"
@@ -74,8 +75,8 @@ Sparseness: True
 Complexity: True
 
 EffectiveComplexity: True
-ec_eps: 0.00001
+ec_eps: 0.01
 
 # util
-normalise: False
+normalise: True
 device: "cuda:0"

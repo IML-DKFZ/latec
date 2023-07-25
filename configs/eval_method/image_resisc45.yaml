@@ -19,13 +19,14 @@ pf_features_in_step: 224
 pf_perturb_baseline: "black"
 
 RegionPerturbation: True
-rp_patch_size: 14
-rp_regions_evaluation: 10
+rp_patch_size: 18
+rp_regions_evaluation: 20
 rp_perturb_baseline: "uniform"
 
 InsertionDeletion: True
 id_pixel_batch_size: 50
-id_sigma: 5.0
+id_sigma: 40.0
+id_kernel_size: 19
 
 IROF: True
 irof_segmentation_method: "slic"
@@ -74,8 +75,8 @@ Sparseness: True
 Complexity: True
 
 EffectiveComplexity: True
-ec_eps: 0.00001
+ec_eps: 0.01
 
 # util
-normalise: False
+normalise: True
 device: "cuda:0"

@@ -2,11 +2,11 @@
 
 defaults:
   - _self_
-  - data: modelnet40.yaml # choose datamodule with `test_dataloader()` for evaluation
+  - data: imagenet.yaml # choose datamodule with `test_dataloader()` for evaluation
   - logger: null
   - paths: default.yaml
-  - eval_method: point_cloud.yaml
-  - explain_method: point_cloud.yaml
+  - eval_method: image_imagnet.yaml
+  - explain_method: image.yaml
   - extras: default.yaml
   - hydra: default.yaml
 
@@ -17,5 +17,5 @@ time: ${now:%Y-%m-%d}_${now:%H-%M-%S}
 
 # passing checkpoint path is necessary for evaluation
 ckpt_path: ${paths.data_dir}/model_weights/
-attr_path: "/explain_modelnet40_11_methods_2023-07-13_11-03-03.npz"
+attr_path: "/explain_imagenet_14_methods_2023-07-13_12-02-29.npz"
 chunk_size: 2
