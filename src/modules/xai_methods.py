@@ -132,7 +132,7 @@ class XAIMethodsModule:
         elif model.__class__.__name__ == "PCT":
             layer = [model.pt_last.sa4.after_norm]
             reshap = reshape_transform_2D
-            #include_negative = True
+            # include_negative = True
 
         self.xai_methods = []
         self.xai_hparams = []
@@ -257,7 +257,11 @@ class XAIMethodsModule:
         if self.xai_cfg.deeplift_shap:
             dlshap = DeepLiftShap(model)
             self.xai_methods.append(dlshap)
-            dlshap_hparams = {"baselines": self.x_batch if self.x_batch.shape[0] < 16 else self.x_batch[0:16]}
+            dlshap_hparams = {
+                "baselines": self.x_batch
+                if self.x_batch.shape[0] < 16
+                else self.x_batch[0:16]
+            }
             self.xai_hparams.append(dlshap_hparams)
 
         if self.xai_cfg.lrp or self.xai_cfg.attention:
@@ -296,9 +300,6 @@ class XAIMethodsModule:
             attr.append(
                 self.xai_methods[i].attribute(inputs=x, target=y, **self.xai_hparams[i])
             )
-
-
-            
 
         attr_total = np.asarray(
             [i.detach().numpy() if torch.is_tensor(i) else i for i in attr]

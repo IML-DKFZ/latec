@@ -111,7 +111,7 @@ class AttentionLRP:
                 elif self.modality == "Voxel" or self.modality == "Point_Cloud":
                     atten = atten.detach().cpu().numpy()
 
-                atten = np.maximum(atten, 0.)
+                atten = np.maximum(atten, 0.0)
 
             list.append(atten)
 

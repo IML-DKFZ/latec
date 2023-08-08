@@ -116,7 +116,7 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
                 a_batch = explain_data[count_model][:, count_xai, :]
 
                 if np.all((a_batch[i : i + cfg.chunk_size] == 0)):
-                    a_batch[i : i + cfg.chunk_size][:,0,0] = 0.0000000001
+                    a_batch[i : i + cfg.chunk_size][:, 0, 0] = 0.0000000001
 
                 if cfg.data.modality == "Image" or cfg.data.modality == "Point_Cloud":
                     x_batch = x_batch.cpu().numpy()
@@ -133,7 +133,12 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
                     a_batch[i : i + cfg.chunk_size],
                     xai_methods,
                     count_xai,
-                    custom_batch= [x_batch, y_batch, a_batch, list(range(i,i + cfg.chunk_size))],
+                    custom_batch=[
+                        x_batch,
+                        y_batch,
+                        a_batch,
+                        list(range(i, i + cfg.chunk_size)),
+                    ],
                 )
                 results.append(deepcopy(scores))
 
@@ -151,7 +156,7 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
         torch.cuda.empty_cache()
         gc.collect()
 
-        eval_data.append(np.array(eval_data_model)) # xai, eval, obs
+        eval_data.append(np.array(eval_data_model))  # xai, eval, obs
 
     np.savez(
         str(cfg.paths.data_dir)

@@ -116,7 +116,7 @@ class EvalModule:
                 pixel_batch_size=self.eval_cfg.id_pixel_batch_size,
                 sigma=self.eval_cfg.id_sigma,
                 kernel_size=self.eval_cfg.id_kernel_size,
-                modality = self.modality,
+                modality=self.modality,
             )
 
         if self.eval_cfg.IROF:
@@ -127,19 +127,21 @@ class EvalModule:
                 return_aggregate=False,
                 disable_warnings=True,
                 normalise=self.eval_cfg.normalise,
-                modality = self.modality,
+                modality=self.modality,
             )
 
         if self.eval_cfg.ROAD:
             self.ROAD = ROAD(
                 noise=self.eval_cfg.road_noise,
-                perturb_func= quantus.perturb_func.noisy_linear_imputation
+                perturb_func=quantus.perturb_func.noisy_linear_imputation
                 if self.modality == "Image"
                 else quantus.perturb_func.gaussian_noise,
                 percentages=list(range(1, self.eval_cfg.road_percentages_max, 2)),
                 perturb_func_kwargs={"indexed_axes": (0, 1)}
                 if self.modality == "Point_Cloud"
-                else {"indexed_axes": (0, 1, 2)} if self.modality == "Voxel" else None,
+                else {"indexed_axes": (0, 1, 2)}
+                if self.modality == "Voxel"
+                else None,
                 display_progressbar=False,
                 disable_warnings=True,
                 normalise=self.eval_cfg.normalise,
@@ -151,7 +153,7 @@ class EvalModule:
                 return_aggregate=False,
                 disable_warnings=True,
                 normalise=self.eval_cfg.normalise,
-                modality = self.modality,
+                modality=self.modality,
             )
 
         # Robustness
@@ -188,7 +190,7 @@ class EvalModule:
                 similarity_func=quantus.similarity_func.correlation_spearman,
                 disable_warnings=True,
                 normalise=self.eval_cfg.normalise,
-                modality = self.modality,
+                modality=self.modality,
             )
 
         if self.eval_cfg.RelativeInputStability:
@@ -196,7 +198,7 @@ class EvalModule:
                 nr_samples=self.eval_cfg.ris_nr_samples,
                 disable_warnings=True,
                 normalise=self.eval_cfg.normalise,
-                return_nan_when_prediction_changes = False,
+                return_nan_when_prediction_changes=False,
             )
 
         if self.eval_cfg.RelativeOutputStability:
@@ -204,7 +206,7 @@ class EvalModule:
                 nr_samples=self.eval_cfg.ros_nr_samples,
                 disable_warnings=True,
                 normalise=self.eval_cfg.normalise,
-                return_nan_when_prediction_changes = False,
+                return_nan_when_prediction_changes=False,
             )
 
         if self.eval_cfg.RelativeRepresentationStability:
@@ -213,7 +215,7 @@ class EvalModule:
                 layer_names=layer,
                 disable_warnings=True,
                 normalise=self.eval_cfg.normalise,
-                return_nan_when_prediction_changes = False,
+                return_nan_when_prediction_changes=False,
             )
 
         # if self.eval_cfg.Infidelity:
@@ -245,7 +247,9 @@ class EvalModule:
                 normalise=self.eval_cfg.normalise,
             )
 
-    def evaluate(self, model, x_batch, y_batch, a_batch, xai_methods, count_xai, custom_batch):
+    def evaluate(
+        self, model, x_batch, y_batch, a_batch, xai_methods, count_xai, custom_batch
+    ):
         eval_scores = []
         # Faithfulness
         if self.eval_cfg.FaithfulnessCorrelation:
@@ -291,14 +295,14 @@ class EvalModule:
             eval_scores.append(self.PixelFlipping.get_auc_score)
 
         if self.eval_cfg.RegionPerturbation:
-                _ = self.RegionPerturbation(
-                    model=model,
-                    x_batch=x_batch,
-                    y_batch=y_batch,
-                    a_batch=a_batch,
-                    device=self.eval_cfg.device,
-                )
-                eval_scores.append(self.RegionPerturbation.get_auc_score)
+            _ = self.RegionPerturbation(
+                model=model,
+                x_batch=x_batch,
+                y_batch=y_batch,
+                a_batch=a_batch,
+                device=self.eval_cfg.device,
+            )
+            eval_scores.append(self.RegionPerturbation.get_auc_score)
 
         if self.eval_cfg.InsertionDeletion:
             ins_auc, del_auc = self.InsertionDeletion.evaluate(
@@ -424,8 +428,20 @@ class EvalModule:
             score = infidelity(
                 model,
                 perturb_fn,
-                torch.from_numpy(x_batch.copy()).to(next(model.parameters()).device).unsqueeze(1) if self.modality=="Voxel" else torch.from_numpy(x_batch.copy()).to(next(model.parameters()).device),
-                torch.from_numpy(a_batch.copy()).to(next(model.parameters()).device).unsqueeze(1) if self.modality=="Voxel" else torch.from_numpy(a_batch.copy()).to(next(model.parameters()).device),
+                torch.from_numpy(x_batch.copy())
+                .to(next(model.parameters()).device)
+                .unsqueeze(1)
+                if self.modality == "Voxel"
+                else torch.from_numpy(x_batch.copy()).to(
+                    next(model.parameters()).device
+                ),
+                torch.from_numpy(a_batch.copy())
+                .to(next(model.parameters()).device)
+                .unsqueeze(1)
+                if self.modality == "Voxel"
+                else torch.from_numpy(a_batch.copy()).to(
+                    next(model.parameters()).device
+                ),
                 target=torch.from_numpy(y_batch.copy()).to(
                     next(model.parameters()).device
                 ),

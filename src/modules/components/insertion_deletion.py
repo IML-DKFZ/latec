@@ -18,7 +18,7 @@ class BaseEvaluation(metaclass=ABCMeta):
 
 
 class InsertionDeletion(BaseEvaluation):
-    def __init__(self, pixel_batch_size=10, sigma=5.0,kernel_size=9, modality = "image"):
+    def __init__(self, pixel_batch_size=10, sigma=5.0, kernel_size=9, modality="image"):
         self.sigma = sigma
         self.pixel_batch_size = pixel_batch_size
         self.gaussian_blurr = GaussianBlur(kernel_size, sigma)
@@ -105,19 +105,26 @@ class InsertionDeletion(BaseEvaluation):
             for pixel in range(batch):
                 if self.modality == "Voxel":
                     perturb_index = (
-                        indices[-3][replaced_pixels + pixel], #x
-                        indices[-2][replaced_pixels + pixel], #y
-                        indices[-1][replaced_pixels + pixel], #z
+                        indices[-3][replaced_pixels + pixel],  # x
+                        indices[-2][replaced_pixels + pixel],  # y
+                        indices[-1][replaced_pixels + pixel],  # z
                     )
 
-                    perturber.perturb(r = perturb_index[0], c = perturb_index[1], v = perturb_index[2], modality = self.modality)
+                    perturber.perturb(
+                        r=perturb_index[0],
+                        c=perturb_index[1],
+                        v=perturb_index[2],
+                        modality=self.modality,
+                    )
                 else:
                     perturb_index = (
-                        indices[-2][replaced_pixels + pixel], #x
-                        indices[-1][replaced_pixels + pixel], #y
+                        indices[-2][replaced_pixels + pixel],  # x
+                        indices[-1][replaced_pixels + pixel],  # y
                     )
 
-                    perturber.perturb(r = perturb_index[0], c = perturb_index[1], modality = self.modality)
+                    perturber.perturb(
+                        r=perturb_index[0], c=perturb_index[1], modality=self.modality
+                    )
 
             perturbed_inputs.append(perturber.get_current())
             replaced_pixels += batch
@@ -165,7 +172,7 @@ class PixelPerturber(Perturber):
         self.current = inp.clone()
         self.baseline = baseline
 
-    def perturb(self, modality, r: int, c: int, v = 0):
+    def perturb(self, modality, r: int, c: int, v=0):
         if modality == "Image":
             self.current[:, r, c] = self.baseline[:, r, c]
         elif modality == "Point_Cloud":
