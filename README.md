@@ -23,7 +23,7 @@
 </p>
 
 
-## 📝&nbsp;&nbsp;Citing This Work
+## 📝&nbsp;&nbsp;Citing this Work
 
 If you use LATEC please cite our [paper]()
 
@@ -34,8 +34,8 @@ If you use LATEC please cite our [paper]()
 ## 🧭&nbsp;&nbsp;Table of Contents
 * [Installation](#Installation)
 * [Project Structure](#project-structure)
-* [Usage](#usage)
-  * [Reproduce the Results](#reproduce-the-results)
+* [Getting started](#getting-started)
+  * [Reproducing the Results](#reproducing-the-results)
   * [Run your own Experiments](#run-your-own-experiments)
 * [Acknowledgements](#acknowledgements)
 
@@ -50,7 +50,11 @@ conda create -n LATEC python=3.9
 source activate LATEC
 pip install -r requirements.txt
 ````
-Depending on your GPU, change the torch and torchvision version in the `requirements.txt` file to the respective CUDA supporting version.
+Depending on your GPU, change the torch and torchvision version in the `requirements.txt` file to the respective CUDA supporting version. In addition install the forks of the following repositories seperatly:
+
+```
+pip install https://github.com/user/repository/archive/branch.zip
+````
 
 ## 🗃&nbsp;&nbsp;Project Structure
 
@@ -88,6 +92,16 @@ Depending on your GPU, change the torch and torchvision version in the `requirem
 └── main_rank.py              - Runs ranking pipeline
 ```
 
-## 📊&nbsp;&nbsp;Usage
+## 🚀&nbsp;&nbsp;Getting started
+
+### Reproducing the Results
+### Run your own Experiments
 
 ## 📣&nbsp;&nbsp;Acknowledgements
+
+The code is developed by the authors of the paper. However, it does also contain pieces of code from the following packages:
+
+- Captum by Kokhlikyan, Narine et al.: https://github.com/pytorch/captum
+- Quantus by Hedström, Anna et al.: https://github.com/understandable-machine-intelligence-lab/Quantus
+- Pytorch EfficientNet 3D by Shi, Jian: https://github.com/shijianjian/EfficientNet-PyTorch-3D
+- Pytorch Point Cloud Transformer by Guo, Meng-Hao et al.: https://github.com/Strawberry-Eat-Mango/PCT_Pytorch
