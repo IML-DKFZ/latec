@@ -293,7 +293,7 @@ class XAIMethodsModule:
                 self.xai_hparams.append(lrp_hparams)
                 self.xai_methods.append(lrp)
 
-    def attribute(self, x, y):
+    def attribute(self, x, y):  # .attribute() for compatibility with dependencies
         attr = []
 
         for i in range(len(self.xai_methods)):

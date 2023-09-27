@@ -147,7 +147,13 @@ dmypy.json
 
 # Lightning-Hydra-Template
 configs/local/default.yaml
-/data/
+/data/datasets/
+/data/evaluation/
+/data/explanation_maps/
+/data/model_weights/
+/data/figures/gif/
+/data/figures/eval_distr/
+/data/figures/*.png
 /logs/
 /configs/paths/
 .env
