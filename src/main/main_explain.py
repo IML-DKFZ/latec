@@ -1,14 +1,14 @@
 from typing import List, Optional, Tuple
 
 import hydra
-import torch
-import pyrootutils
 import numpy as np
+import pyrootutils
 import pytorch_lightning as pl
-
-from tqdm.auto import tqdm
+import torch
 from omegaconf import DictConfig
 from pytorch_lightning import LightningDataModule
+from tqdm.auto import tqdm
+
 from modules.models import ModelsModule
 from modules.xai_methods import XAIMethodsModule
 

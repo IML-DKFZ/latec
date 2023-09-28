@@ -1,18 +1,19 @@
+import gc
+from copy import deepcopy
 from typing import List, Optional, Tuple
 
 import hydra
-import torch
-import pyrootutils
 import numpy as np
+import pyrootutils
 import pytorch_lightning as pl
-import gc
-from tqdm.auto import tqdm
+import torch
 from omegaconf import DictConfig
 from pytorch_lightning import LightningDataModule
-from modules.models import ModelsModule
+from tqdm.auto import tqdm
+
 from modules.eval_methods import EvalModule
+from modules.models import ModelsModule
 from modules.xai_methods import XAIMethodsModule
-from copy import deepcopy
 
 pyrootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
 

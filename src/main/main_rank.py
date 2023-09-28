@@ -1,16 +1,15 @@
+import os
 from typing import List, Optional, Tuple
 
 import hydra
-import torch
-import os
-import pandas as pd
-from scipy.stats import sem
-import pyrootutils
 import numpy as np
+import pandas as pd
+import pyrootutils
 import pytorch_lightning as pl
-
-from tqdm.auto import tqdm
+import torch
 from omegaconf import DictConfig
+from scipy.stats import sem
+from tqdm.auto import tqdm
 
 
 def NormalizeData(data, min, max):

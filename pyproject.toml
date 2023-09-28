@@ -1,0 +1,75 @@
+[build-system]
+requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "latec"
+dynamic = ["version"]
+requires-python = ">=3.10"
+dependencies = [
+    "captum @ git+https://github.com/kjdhfg/captum.git",
+    "efficientnet-pytorch==0.7.1",
+    "efficientnet-pytorch-3d @ git+https://github.com/shijianjian/EfficientNet-PyTorch-3D",
+    "einops==0.6.0",
+    "grad-cam==1.4.6",
+    "hydra-colorlog==1.2.0",
+    "hydra-core==1.3.2",
+    "numpy==1.23.5",
+    "omegaconf==2.3.0",
+    "opencv-python-headless>=4.7.0",
+    "pandas==1.5.3",
+    "pyrootutils==1.0.4",
+    "pytorch-lightning==1.8.6",
+    "quantus @ git+https://github.com/kjdhfg/Quantus.git",
+    "rich==13.3.2",
+    "scipy==1.9.1",
+    "timm==0.6.12",
+    "torch-geometric==2.3.1",
+    "torch==1.12.1",
+    "torchvision==0.13.1",
+    "tqdm==4.65.0",
+    "ttach==0.0.3",
+]
+
+[project.optional-dependencies]
+dev = [
+  "ruff",
+  "black",
+  "debugpy",
+  "pre-commit"
+]
+docs = [
+  "jupyterlab",
+  "notebook",
+  "ipykernel",
+]
+
+[project.scripts]
+latec-eval = "main.main_eval:main"
+latec-explain = "main.main_explain:main"
+latec-rank = "main.main_rank:main"
+
+[tool.setuptools_scm]
+write_to = "src/_version.py"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["*.yaml"]
+
+[tool.isort]
+profile = "black"
+
+[tool.black]
+line-length = 88
+exclude = '''
+
+(
+  /(
+      \.git
+    | \.venv
+    | _build
+  )/
+)
+'''
