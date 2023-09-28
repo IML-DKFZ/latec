@@ -4,7 +4,7 @@
     <img src="data/figures/misc/logo.png" alt="Logo" width="600"> 
   </a>
 
-  <h1 align="center">Large-scale Attribution & Attention Evaluation in Computer Vision</h1>
+  <h1 align="center">Large-scale Attribution & Attention Evaluation in Computer Vision <i>(REVIEWER VERSION)</i></h1>
 
   <p align="center">
     <a href=""><strong>Read the paper »</strong></a>
@@ -44,23 +44,14 @@ If you use LATEC please cite our [paper]()
 
 ## ⚙️&nbsp;&nbsp;Installation
 
-LATEC requires Python version 3.9 or later. All essential libraries for the execution of the code are provided in the `requirements.txt` file from which a new environment can be created (Linux only). Setup package in a conda environment:
+LATEC requires Python version 3.9 or later. All essential libraries for the execution of the code are installed when installing this repository:
 
-```
+```bash
 git clone https://github.com/link/to/repository
 cd LATEC
-conda create -n LATEC python=3.9
-source activate LATEC
-pip install -r requirements.txt
+pip install .
 ````
-Depending on your GPU, change the torch and torchvision version in the `requirements.txt` file to the respective CUDA-supporting version. All scripts run also on CPU, but can take substantially longer depending on the experiment. Testing and development were done with the Pytorch version using CUDA 11.6. 
-
-In addition, install the forks of the following repositories separately:
-
-```
-pip install https://github.com/user/captum/archive/branch.zip
-pip install https://github.com/user/quantus/archive/branch.zip
-````
+Depending on your GPU, you need to install an appropriate version of PyTorch and torchvision separately. All scripts run also on CPU, but can take substantially longer depending on the experiment. Testing and development were done with the Pytorch version using CUDA 11.6. 
 
 ## 🗃&nbsp;&nbsp;Project Structure
 
@@ -106,18 +97,18 @@ In the case of the [CoMA](https://coma.is.tue.mpg.de/) and [RESISC45](http://www
 
 #### **Saliency Maps**
 Select the respective .yaml config for the respective dataset from `./config/data/` and modality for the config of the XAI methods from `./config/explain_method/`. Then run a command with both specified such as:
-```
-python src/main_explain.py data=modelnet40.yaml explain_method=point_cloud.yaml
+```bash
+latec-explain data=modelnet40.yaml explain_method=point_cloud.yaml
 ```
 #### **Evaluation Scores**
 For score computation define in addition to the `data` and `explain_method` also the `./config/eval_method/` dataset and add the file name of the .npz file containing the saliency maps, located at `./data/explanation_map/*modality*/`. Then run a command with all four specified such as:
-```
-python src/main_eval.py data=coma.yaml explain_method=point_cloud.yaml eval_method=point_cloud_coma.yaml attr_path='explain_coma.npz'
+```bash
+latec-eval data=coma.yaml explain_method=point_cloud.yaml eval_method=point_cloud_coma.yaml attr_path='explain_coma.npz'
 ```
 #### **Ranking Tables**
 Run the following command but make sure that the paths in `./config/rank.yaml` lead to the correct evaluation score .npz files and the right ranking shema is selected.
-```
- python src/main_rank.py
+```bash
+latec-rank
 ```
 <br>
 
