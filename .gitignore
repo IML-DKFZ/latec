@@ -161,5 +161,4 @@ configs/local/default.yaml
 /logs/eval/*
 /logs/rank/*
 /logs/explain/*
-/configs/paths/
 .env

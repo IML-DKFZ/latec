@@ -98,12 +98,12 @@ In the case of the [CoMA](https://coma.is.tue.mpg.de/) and [RESISC45](http://www
 #### **Saliency Maps**
 Select the respective .yaml config for the respective dataset from `./config/data/` and modality for the config of the XAI methods from `./config/explain_method/`. Then run a command with both specified such as:
 ```bash
-latec-explain data=modelnet40.yaml explain_method=point_cloud.yaml
+latec-explain data=vesselmnist3d.yaml explain_method=volume.yaml
 ```
 #### **Evaluation Scores**
 For score computation define in addition to the `data` and `explain_method` also the `./config/eval_method/` dataset and add the file name of the .npz file containing the saliency maps, located at `./data/explanation_map/*modality*/`. Then run a command with all four specified such as:
 ```bash
-latec-eval data=coma.yaml explain_method=point_cloud.yaml eval_method=point_cloud_coma.yaml attr_path='explain_coma.npz'
+latec-eval data=vesselmnist3d.yaml explain_method=volume.yaml eval_method=volume_vessel.yaml attr_path='explain_VesselMNIST3D_*n*_methods_*time*.npz'
 ```
 #### **Ranking Tables**
 Run the following command but make sure that the paths in `./config/rank.yaml` lead to the correct evaluation score .npz files and the right ranking shema is selected.
