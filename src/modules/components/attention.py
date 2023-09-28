@@ -95,7 +95,7 @@ class AttentionLRP:
                     atten = np.repeat(
                         np.expand_dims(rescale_attention_2D(atten), (0, 1)), 3, axis=1
                     ).squeeze()
-                elif self.modality == "Voxel":
+                elif self.modality == "Volume":
                     atten = rescale_attention_3D(atten)
                 elif self.modality == "Point_Cloud":
                     atten = np.repeat(
@@ -108,7 +108,7 @@ class AttentionLRP:
                     atten = np.repeat(
                         np.expand_dims(atten.detach().cpu().numpy(), 1), 3, axis=1
                     ).squeeze()
-                elif self.modality == "Voxel" or self.modality == "Point_Cloud":
+                elif self.modality == "Volume" or self.modality == "Point_Cloud":
                     atten = atten.detach().cpu().numpy()
 
                 atten = np.maximum(atten, 0.0)

@@ -35,6 +35,7 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
         str(cfg.paths.data_dir)
         + "/explanation_maps/"
         + cfg.data.modality
+        + "/"
         + cfg.attr_path
     )
     explain_data = [
@@ -96,7 +97,7 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
                 # Check if observations are tensor
                 if torch.is_tensor(x_batch) == False:
                     x_batch = torch.from_numpy(x_batch).to(cfg.eval_method.device)
-                    if cfg.data.modality == "Voxel":
+                    if cfg.data.modality == "Volume":
                         x_batch = x_batch.unsqueeze(1)
                 else:
                     x_batch = x_batch.to(cfg.eval_method.device)
@@ -121,7 +122,7 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
 
                 if cfg.data.modality == "Image" or cfg.data.modality == "Point_Cloud":
                     x_batch = x_batch.cpu().numpy()
-                elif cfg.data.modality == "Voxel":
+                elif cfg.data.modality == "Volume":
                     x_batch = x_batch.squeeze().cpu().numpy()
                     a_batch = a_batch.squeeze()
 

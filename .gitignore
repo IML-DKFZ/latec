@@ -147,13 +147,19 @@ dmypy.json
 
 # Lightning-Hydra-Template
 configs/local/default.yaml
-/data/datasets/
-/data/evaluation/
-/data/explanation_maps/
-/data/model_weights/
-/data/figures/gif/
+/data/datasets/*/
+/data/evaluation/Image/*.npz
+/data/evaluation/Point_Cloud/*.npz
+/data/evaluation/Volume/*.npz
+/data/explanation_maps/Image/*.npz
+/data/explanation_maps/Point_Cloud/*.npz
+/data/explanation_maps/Volume/*.npz
+/data/model_weights/*/*.ckpt
+/data/figures/gif/*.gif
 /data/figures/eval_distr/
 /data/figures/*.png
-/logs/
+/logs/eval/*
+/logs/rank/*
+/logs/explain/*
 /configs/paths/
 .env

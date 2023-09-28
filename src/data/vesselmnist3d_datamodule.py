@@ -2,24 +2,27 @@ from typing import Any, Dict, Optional, Tuple
 
 import torch
 import os
-from pytorch_lightning import LightningDataModule
-from torch.utils.data import DataLoader
 import numpy as np
 import random
+
+from pytorch_lightning import LightningDataModule
+from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
+
+from utils.download_url import *
 
 
 class Transform3D:
     def __init__(self, mul=None):
         self.mul = mul
 
-    def __call__(self, voxel):
+    def __call__(self, volume):
         if self.mul == "0.5":
-            voxel = voxel * 0.5
+            volume = volume * 0.5
         elif self.mul == "random":
-            voxel = voxel * np.random.uniform()
+            volume = volume * np.random.uniform()
 
-        return voxel.astype(np.float32)
+        return volume.astype(np.float32)
 
 
 class MedMNIST(Dataset):
@@ -118,13 +121,25 @@ class VesselMNSIT3DDataModule(LightningDataModule):
         num_workers: int = 0,
         pin_memory: bool = False,
         num_classes=2,
-        modality: str = "Voxel",
+        modality: str = "Volume",
         weights_3dresnet=None,
         weights_3deffnet=None,
         weights_s3dformer=None,
     ):
         super().__init__()
         self.__name__ = "VesselMNIST3D"
+
+        if not os.path.exists(data_dir + "/VesselMNIST3D"):
+            print("Downloading VesselMNIST3D data...")
+
+            data_url = (
+                "https://zenodo.org/record/6496656/files/vesselmnist3d.npz?download=1"
+            )
+            save_path = data_dir + "/VesselMNIST3D/vesselmnist3d.npz"
+
+            os.makedirs(data_dir + "/VesselMNIST3D/", exist_ok=True)
+
+            download_url(data_url, save_path)
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt

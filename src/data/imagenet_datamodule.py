@@ -1,12 +1,16 @@
 from typing import Any, Dict, Optional, Tuple
 
 import torch
+import numpy as np
+import random
+import os
+
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader
 from torchvision.datasets import ImageNet
 from torchvision.transforms import transforms
-import numpy as np
-import random
+
+from utils.download_url import *
 
 
 class ImageNetDataModule(LightningDataModule):
@@ -26,6 +30,11 @@ class ImageNetDataModule(LightningDataModule):
     ):
         super().__init__()
         self.__name__ = "imagenet"
+
+        if not os.path.exists(data_dir + "/val"):
+            raise ValueError(
+                "Will be implemented after publication, as dataset is hosted on Kaggle"
+            )
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt

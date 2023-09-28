@@ -1,14 +1,12 @@
-from typing import Any, Dict, Optional, Tuple
-
 import torch
-from pytorch_lightning import LightningDataModule
-from torch.utils.data import DataLoader
-from torch_geometric.data import Data
-from torch_geometric.transforms import BaseTransform
 import numpy as np
 import random
+import os
+
+from pytorch_lightning import LightningDataModule
+from torch.utils.data import DataLoader
 from torch_geometric.transforms import NormalizeScale
-from torch_geometric.datasets import ModelNet, ShapeNet, CoMA
+from torch_geometric.datasets import CoMA
 from torch_geometric.transforms import FixedPoints
 
 

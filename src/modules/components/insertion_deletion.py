@@ -103,7 +103,7 @@ class InsertionDeletion(BaseEvaluation):
 
             # perturb # of pixel_batch_size pixels
             for pixel in range(batch):
-                if self.modality == "Voxel":
+                if self.modality == "Volume":
                     perturb_index = (
                         indices[-3][replaced_pixels + pixel],  # x
                         indices[-2][replaced_pixels + pixel],  # y
@@ -177,7 +177,7 @@ class PixelPerturber(Perturber):
             self.current[:, r, c] = self.baseline[:, r, c]
         elif modality == "Point_Cloud":
             self.current[r, c] = self.baseline[r, c]
-        elif modality == "Voxel":
+        elif modality == "Volume":
             self.current[r, c, v] = self.baseline[r, c, v]
 
     def get_current(self) -> torch.Tensor:

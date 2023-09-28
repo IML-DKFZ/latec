@@ -17,5 +17,5 @@ time: ${now:%Y-%m-%d}_${now:%H-%M-%S}
 
 # passing checkpoint path is necessary for evaluation
 ckpt_path: ${paths.data_dir}/model_weights/
-attr_path: "/explain_imagenet_14_methods_2023-07-13_12-02-29.npz"
+attr_path: "/explain_imagenet.npz"
 chunk_size: 2

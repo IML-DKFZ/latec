@@ -4,7 +4,7 @@ batch_size: 50
 num_workers: 0
 pin_memory: False
 
-modality: Voxel
+modality: Volume
 num_classes: 11
 
 weights_3dresnet: ${paths.data_dir}/model_weights/OrganMNIST3D/3DResNet18-epoch=99-val_loss=0.05-val_AUROC=1.000.ckpt

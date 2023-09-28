@@ -40,12 +40,12 @@ def rank(cfg: DictConfig) -> Tuple[dict, dict]:
     file = np.load(file_loc + cfg.file_image_r45, allow_pickle=True)
     arr_image_r45 = [file["arr_0"], file["arr_1"], file["arr_2"]]
 
-    file = np.load(file_loc + cfg.file_voxel_adr, allow_pickle=True)
-    arr_voxel_adr = [file["arr_0"], file["arr_1"], file["arr_2"]]
-    file = np.load(file_loc + cfg.file_voxel_org, allow_pickle=True)
-    arr_voxel_org = [file["arr_0"], file["arr_1"], file["arr_2"]]
-    file = np.load(file_loc + cfg.file_voxel_ves, allow_pickle=True)
-    arr_voxel_ves = [file["arr_0"], file["arr_1"], file["arr_2"]]
+    file = np.load(file_loc + cfg.file_volume_adr, allow_pickle=True)
+    arr_volume_adr = [file["arr_0"], file["arr_1"], file["arr_2"]]
+    file = np.load(file_loc + cfg.file_volume_org, allow_pickle=True)
+    arr_volume_org = [file["arr_0"], file["arr_1"], file["arr_2"]]
+    file = np.load(file_loc + cfg.file_volume_ves, allow_pickle=True)
+    arr_volume_ves = [file["arr_0"], file["arr_1"], file["arr_2"]]
 
     file = np.load(file_loc + cfg.file_pc_coma, allow_pickle=True)
     arr_pc_coma = [file["arr_0"], file["arr_1"], file["arr_2"]]
@@ -55,9 +55,9 @@ def rank(cfg: DictConfig) -> Tuple[dict, dict]:
     arr_pc_shpn = [file["arr_0"], file["arr_1"], file["arr_2"]]
 
     arr_image = [arr_image_inet, arr_image_oct, arr_image_r45]
-    arr_voxel = [arr_voxel_adr, arr_voxel_org, arr_voxel_ves]
+    arr_volume = [arr_volume_adr, arr_volume_org, arr_volume_ves]
     arr_pc = [arr_pc_coma, arr_pc_m40, arr_pc_shpn]
-    arr_modalities = [arr_image, arr_voxel, arr_pc]
+    arr_modalities = [arr_image, arr_volume, arr_pc]
 
     # Compute either full ranking or ranking across models
     if cfg.full_ranking == True:

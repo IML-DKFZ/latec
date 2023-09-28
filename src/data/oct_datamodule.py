@@ -1,13 +1,17 @@
 from typing import Any, Dict, Optional, Tuple
 
 import torch
+import numpy as np
+import random
+import os
+
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader
 from torchvision.datasets import ImageNet
 from torchvision.transforms import transforms
-import numpy as np
-import random
 from torchvision import datasets
+
+from utils.download_url import *
 
 
 class OCTDataModule(LightningDataModule):
@@ -28,6 +32,11 @@ class OCTDataModule(LightningDataModule):
     ):
         super().__init__()
         self.__name__ = "oct"
+
+        if not os.path.exists(data_dir + "/OCT2017 "):
+            raise ValueError(
+                "Will be implemented after publication as dataset is hosted on Kaggle"
+            )
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt

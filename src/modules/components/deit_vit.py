@@ -281,14 +281,14 @@ class PatchEmbed(nn.Module):
         return self.proj.relprop(cam, **kwargs)
 
 
-class VoxelEmbed(nn.Module):
-    """Voxel to Patch Embedding (Simplest 3D CNN)"""
+class VolumeEmbed(nn.Module):
+    """Volume to Patch Embedding (Simplest 3D CNN)"""
 
     def __init__(
-        self, voxel_size=128, cell_size=16, patch_size=8, in_chans=1, embed_dim=768
+        self, volume_size=128, cell_size=16, patch_size=8, in_chans=1, embed_dim=768
     ):
         super().__init__()
-        self.voxel_size = (voxel_size, voxel_size, voxel_size)
+        self.volume_size = (volume_size, volume_size, volume_size)
         self.cell_size = (cell_size, cell_size, cell_size)
         self.patch_size = patch_size
         num_patches = patch_size**3  # 2
@@ -306,10 +306,10 @@ class VoxelEmbed(nn.Module):
         B, C, H, W, V = x.shape
         # FIXME look at relaxing size constraints
         assert (
-            H == self.voxel_size[0]
-            and W == self.voxel_size[1]
-            and V == self.voxel_size[2]
-        ), f"Input voxel size ({H}*{W}*{V}) doesn't match model ({self.voxel_size[0]}*{self.voxel_size[1]}*{self.voxel_size[2]})."
+            H == self.volume_size[0]
+            and W == self.volume_size[1]
+            and V == self.volume_size[2]
+        ), f"Input volume size ({H}*{W}*{V}) doesn't match model ({self.volume_size[0]}*{self.volume_size[1]}*{self.volume_size[2]})."
         x = self.proj(x).flatten(2).transpose(1, 2)
         # x = torch.mean(self.proj(x), dim=4).flatten(2).transpose(1, 2)
         return x

@@ -102,17 +102,17 @@ pip install https://github.com/user/quantus/archive/branch.zip
 If you want to reproduce only certain results or use our provided model weights, saliency maps, or evaluation scores for your own experiments, please download them from [here]() and copy them into the respective folder at `./data/`. 
 ## 🚀&nbsp;&nbsp;Getting started 
 ### ♻️&nbsp;Reproducing the Results
-In the case of the [CoMA dataset](https://coma.is.tue.mpg.de/), please [register at their website](https://coma.is.tue.mpg.de/register.php) to download the data. All other datasets are downloaded automatical into the `./data/datasets/` folder when running the experiment for the first time.
+In the case of the [CoMA](https://coma.is.tue.mpg.de/) and [RESISC45](http://www.escience.cn/people/JunweiHan/NWPU-RESISC45.html) datasets, please download the datasets directly from their websites. All other datasets are downloaded automatical into the `./data/datasets/` folder when running the experiment for the first time.
 
 #### **Saliency Maps**
 Select the respective .yaml config for the respective dataset from `./config/data/` and modality for the config of the XAI methods from `./config/explain_method/`. Then run a command with both specified such as:
 ```
-python src/explain.py data=modelnet40.yaml explain_method=point_cloud.yaml
+python src/main_explain.py data=modelnet40.yaml explain_method=point_cloud.yaml
 ```
 #### **Evaluation Scores**
 For score computation define in addition to the `data` and `explain_method` also the `./config/eval_method/` dataset and add the file name of the .npz file containing the saliency maps, located at `./data/explanation_map/*modality*/`. Then run a command with all four specified such as:
 ```
-python src/eval.py data=coma.yaml explain_method=point_cloud.yaml eval_method=point_cloud_coma.yaml attr_path=' explain_coma.npz
+python src/main_eval.py data=coma.yaml explain_method=point_cloud.yaml eval_method=point_cloud_coma.yaml attr_path='explain_coma.npz'
 ```
 #### **Ranking Tables**
 Run the following command but make sure that the paths in `./config/rank.yaml` lead to the correct evaluation score .npz files and the right ranking shema is selected.

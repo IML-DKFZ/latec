@@ -24,9 +24,6 @@ from quantus import (
 )
 from modules.components.insertion_deletion import InsertionDeletion
 from captum.metrics import infidelity
-from copy import deepcopy
-
-# disable_warnings = True
 
 
 def perturb_fn(inputs):
@@ -140,7 +137,7 @@ class EvalModule:
                 perturb_func_kwargs={"indexed_axes": (0, 1)}
                 if self.modality == "Point_Cloud"
                 else {"indexed_axes": (0, 1, 2)}
-                if self.modality == "Voxel"
+                if self.modality == "Volume"
                 else None,
                 display_progressbar=False,
                 disable_warnings=True,
@@ -431,14 +428,14 @@ class EvalModule:
                 torch.from_numpy(x_batch.copy())
                 .to(next(model.parameters()).device)
                 .unsqueeze(1)
-                if self.modality == "Voxel"
+                if self.modality == "Volume"
                 else torch.from_numpy(x_batch.copy()).to(
                     next(model.parameters()).device
                 ),
                 torch.from_numpy(a_batch.copy())
                 .to(next(model.parameters()).device)
                 .unsqueeze(1)
-                if self.modality == "Voxel"
+                if self.modality == "Volume"
                 else torch.from_numpy(a_batch.copy()).to(
                     next(model.parameters()).device
                 ),

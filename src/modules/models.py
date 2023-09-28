@@ -4,7 +4,7 @@ from torch import nn
 
 from torchvision.models import efficientnet_b0
 from modules.components.resnet import resnet50
-from modules.components.deit_vit import deit_small_patch16_224, VoxelEmbed
+from modules.components.deit_vit import deit_small_patch16_224, VolumeEmbed
 
 from efficientnet_pytorch_3d import EfficientNet3D
 from torchvision.models.video import r3d_18
@@ -69,7 +69,7 @@ class ModelsModule:
                 load_from_lightning(model_3, cfg.data.weights_vit)
                 self.models.append(model_3)
 
-        if modality == "Voxel":
+        if modality == "Volume":
             #### 3D ResNet 18 ####
             model_1 = r3d_18()
             model_1.stem[0] = nn.Conv3d(
@@ -108,8 +108,8 @@ class ModelsModule:
             )
 
             # replace patch_embed layer
-            model_3.patch_embed = VoxelEmbed(
-                voxel_size=28,
+            model_3.patch_embed = VolumeEmbed(
+                volume_size=28,
                 cell_size=4,
                 patch_size=7,
                 in_chans=1,

@@ -1,7 +1,7 @@
 #!/bin/bash
 
-python src/explain.py
+python src/main_explain.py
 
-python src/explain.py data=oct.yaml
+python src/main_explain.py data=oct.yaml
 
-python src/explain.py data=resisc45.yaml
+python src/main_explain.py data=resisc45.yaml

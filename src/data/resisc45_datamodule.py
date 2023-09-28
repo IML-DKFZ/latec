@@ -1,13 +1,17 @@
 from typing import Any, Dict, Optional, Tuple
 
 import torch
+import numpy as np
+import random
+import os
+
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader
 from torchvision.datasets import ImageNet
 from torchvision.transforms import transforms
-import numpy as np
-import random
 from torchvision import datasets
+
+from utils.download_url import *
 
 
 class RESISC45DataModule(LightningDataModule):
@@ -27,6 +31,11 @@ class RESISC45DataModule(LightningDataModule):
     ):
         super().__init__()
         self.__name__ = "resisc45"
+
+        if not os.path.exists(data_dir + "/NWPU-RESISC45"):
+            raise ValueError(
+                "Manual download required: http://www.escience.cn/people/JunweiHan/NWPU-RESISC45.html"
+            )
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
