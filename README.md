@@ -13,7 +13,9 @@
   </p>
 </p>
 
-> *Explainable AI (XAI) is a rapidly growing domain with a myriad of methods as well as metrics aiming to evaluate their efficacy. However, current literature is often of limited scope, examining only a handful of XAI methods and employing one or a few metrics. Furthermore, pivotal factors for performance, such as the underlying architecture or the nature of input data, remain largely unexplored. This lack of comprehensive analysis hinders the ability to make generalized and robust conclusions about XAI performance, which is crucial for directing scientific progress but also for trustworthy real-world application of XAI. In response, we introduce LATEC, a large-scale benchmark that critically evaluates 17 prominent XAI methods using 20 distinct metrics. Our benchmark systematically incorporates vital elements like varied architectures and diverse input types, resulting in 7,560 examined combinations. Using this benchmark, we derive empirically grounded insights into areas of current debate, such as the impact of Transformer architectures and a comparative analysis of traditional attribution methods against novel attention mechanisms. To further solidify LATEC's position as a pivotal resource for future XAI research, all auxiliary data—from trained model weights to over 326k saliency maps and 378k metric scores—are made publicly available.*
+Benchmark XAI Methods and Evaluation Metrics for various Computer Vision Modalities, Datasets and Model Architectures.
+
+> Abstract: <br>*Explainable AI (XAI) is a rapidly growing domain with a myriad of methods as well as metrics aiming to evaluate their efficacy. However, current literature is often of limited scope, examining only a handful of XAI methods and employing one or a few metrics. Furthermore, pivotal factors for performance, such as the underlying architecture or the nature of input data, remain largely unexplored. This lack of comprehensive analysis hinders the ability to make generalized and robust conclusions about XAI performance, which is crucial for directing scientific progress but also for trustworthy real-world application of XAI. In response, we introduce LATEC, a large-scale benchmark that critically evaluates 17 prominent XAI methods using 20 distinct metrics. Our benchmark systematically incorporates vital elements like varied architectures and diverse input types, resulting in 7,560 examined combinations. Using this benchmark, we derive empirically grounded insights into areas of current debate, such as the impact of Transformer architectures and a comparative analysis of traditional attribution methods against novel attention mechanisms. To further solidify LATEC's position as a pivotal resource for future XAI research, all auxiliary data—from trained model weights to over 326k saliency maps and 378k metric scores—are made publicly available.*
 
 <br>
 <p align="center">
@@ -34,6 +36,7 @@ If you use LATEC please cite our [paper]()
 ## 🧭&nbsp;&nbsp;Table of Contents
 * [Installation](#Installation)
 * [Project Structure](#project-structure)
+* [LATEC Dataset](#latec-dataset)
 * [Getting started](#getting-started)
   * [Reproducing the Results](#reproducing-the-results)
   * [Run your own Experiments](#run-your-own-experiments)
@@ -95,10 +98,10 @@ pip install https://github.com/user/quantus/archive/branch.zip
 └── main_rank.py              - Runs ranking pipeline
 ```
 
-## 💾&nbsp;&nbsp;LATEC Dataset
+## 💾&nbsp;&nbsp;LATEC Dataset ([<u>*Download Link*</u>]())
 If you want to reproduce only certain results or use our provided model weights, saliency maps, or evaluation scores for your own experiments, please download them from [here]() and copy them into the respective folder at `./data/`. 
 ## 🚀&nbsp;&nbsp;Getting started 
-### Reproducing the Results
+### ♻️&nbsp;Reproducing the Results
 In the case of the [CoMA dataset](https://coma.is.tue.mpg.de/), please [register at their website](https://coma.is.tue.mpg.de/register.php) to download the data. All other datasets are downloaded automatical into the `./data/datasets/` folder when running the experiment for the first time.
 
 #### **Saliency Maps**
@@ -122,7 +125,7 @@ If you want to run all three steps in sequence run the bash script `./scripts/ru
 
 <br>
 
-### Run your own Experiments
+### 🧪&nbsp;Run your own Experiments
 
 #### Own **Dataset** and **Model Weights**
 1. Add a dataset to `./data/datasets/` and model weights as .ckpt file to `./data/model_weights/`
@@ -144,3 +147,4 @@ The code is developed by the authors of the paper. However, it does also contain
 - Quantus by Hedström, Anna et al.: https://github.com/understandable-machine-intelligence-lab/Quantus
 - Pytorch EfficientNet 3D by Shi, Jian: https://github.com/shijianjian/EfficientNet-PyTorch-3D
 - Pytorch Point Cloud Transformer by Guo, Meng-Hao et al.: https://github.com/Strawberry-Eat-Mango/PCT_Pytorch
+- Pytorch Transformer-Explainability by Chefer, Hila et al.: https://github.com/hila-chefer/Transformer-Explainability
