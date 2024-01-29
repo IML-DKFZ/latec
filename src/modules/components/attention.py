@@ -87,7 +87,7 @@ class AttentionLRP:
                 method=method,
                 is_ablation=is_ablation,
                 start_layer=start_layer,
-                **kwargs
+                **kwargs,
             )
 
             if method != "full":
