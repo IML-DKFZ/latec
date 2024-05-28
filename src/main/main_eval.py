@@ -179,7 +179,9 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
     )
 
 
-@hydra.main(version_base="1.3", config_path= os.getcwd() + "/configs", config_name="eval.yaml")
+@hydra.main(
+    version_base="1.3", config_path=os.getcwd() + "/configs", config_name="eval.yaml"
+)
 def main(cfg: DictConfig) -> Optional[float]:
     eval(cfg)
 

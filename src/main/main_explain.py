@@ -18,6 +18,7 @@ from src import utils
 
 log = utils.get_pylogger(__name__)
 
+
 @utils.task_wrapper
 def explain(cfg: DictConfig) -> Tuple[dict, dict]:
     # set seed for random number generators in pytorch, numpy and python.random
@@ -83,7 +84,10 @@ def explain(cfg: DictConfig) -> Tuple[dict, dict]:
         explain_data[2],
     )
 
-@hydra.main(version_base="1.3", config_path= os.getcwd() + "/configs", config_name="explain.yaml")
+
+@hydra.main(
+    version_base="1.3", config_path=os.getcwd() + "/configs", config_name="explain.yaml"
+)
 def main(cfg: DictConfig) -> Optional[float]:
     explain(cfg)
 
