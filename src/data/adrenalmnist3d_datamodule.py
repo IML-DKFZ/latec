@@ -7,7 +7,7 @@ from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 
-from utils.download_url import *
+from src.utils.download_url import *
 
 
 class Transform3D:
@@ -119,7 +119,7 @@ class AdrenalMNSIT3DDataModule(LightningDataModule):
         num_workers: int = 0,
         pin_memory: bool = False,
         num_classes=11,
-        modality: str = "Volume",
+        modality: str = "volume",
         weights_3dresnet=None,
         weights_3deffnet=None,
         weights_s3dformer=None,

@@ -4,9 +4,9 @@ batch_size: 50
 num_workers: 0
 pin_memory: False
 
-modality: Volume
+modality: volume
 num_classes: 2
 
-weights_3dresnet: ${paths.data_dir}/model_weights/VesselMNIST3D/3DResNet18-epoch=99-val_F1=0.9062-val_Accuracy=0.9062.ckpt
-weights_3deffnet: ${paths.data_dir}/model_weights/VesselMNIST3D/3DEfficientNetB0-epoch=99-val_F1=0.8906-val_Accuracy=0.8906.ckpt
-weights_s3dformer: ${paths.data_dir}/model_weights/VesselMNIST3D/Simple3DFormer-epoch=99-val_F1=0.8802-val_Accuracy=0.8802.ckpt
+weights_3dresnet: ${paths.data_dir}/model_weights/vesselmnist3d/3DResNet18-epoch=99-val_F1=0.9062-val_Accuracy=0.9062.ckpt
+weights_3deffnet: ${paths.data_dir}/model_weights/vesselmnist3d/3DEfficientNetB0-epoch=99-val_F1=0.8906-val_Accuracy=0.8906.ckpt
+weights_s3dformer: ${paths.data_dir}/model_weights/vesselmnist3d/Simple3DFormer-epoch=99-val_F1=0.8802-val_Accuracy=0.8802.ckpt

@@ -11,7 +11,7 @@ from torchvision.datasets import ImageNet
 from torchvision.transforms import transforms
 from torchvision import datasets
 
-from utils.download_url import *
+from src.utils.download_url import *
 
 
 class OCTDataModule(LightningDataModule):
@@ -25,7 +25,7 @@ class OCTDataModule(LightningDataModule):
         resize=256,
         resize_mode="bilinear",
         crop: int = 224,
-        modality: str = "Image",
+        modality: str = "image",
         weights_resnet="IMAGENET1K_V1",
         weights_effnet="IMAGENET1K_V1",
         weights_vit="IMAGENET1K_V1",
@@ -35,7 +35,7 @@ class OCTDataModule(LightningDataModule):
 
         if not os.path.exists(data_dir + "/OCT2017 "):
             raise ValueError(
-                "Will be implemented after publication as dataset is hosted on Kaggle"
+                "Please download the 'OCT2017' folder from Kaggle and place it in the 'dataset' folder."
             )
 
         # this line allows to access init params with 'self.hparams' attribute

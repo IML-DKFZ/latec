@@ -34,7 +34,7 @@ class ShapeNetDataModule(LightningDataModule):
         pin_memory: bool = False,
         categories: str = None,
         num_classes=16,
-        modality: str = "Point_Cloud",
+        modality: str = "point_cloud",
         weights_pointnet="data/model_weights/ShapeNet/PointNet-epoch=199-val_F1=0.9553-val_Accuracy=0.9920.ckpt",  # PointNet2-epoch=99-val_F1=0.9665-val_Accuracy=0.9941.ckpt
         weights_dgcnn="data/model_weights/ShapeNet/DGCNN-epoch=199-val_F1=0.9605-val_Accuracy=0.9941.ckpt",
         weights_pct="data/model_weights/ShapeNet/PCT-epoch=199-val_F1=0.9730-val_Accuracy=0.9963.ckpt",

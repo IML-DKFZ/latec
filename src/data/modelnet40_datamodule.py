@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 from torch_geometric.transforms import NormalizeScale
 from torch_geometric.datasets import ModelNet
 
-from utils.point_sampling import *
+from src.utils.point_sampling import *
 
 
 def collate(list_of_examples):
@@ -29,7 +29,7 @@ class ModelNet40DataModule(LightningDataModule):
         num_classes=45,
         resize=224,
         resize_mode="bilinear",
-        modality: str = "Point_Cloud",
+        modality: str = "point_cloud",
         weights_pointnet="data/model_weights/ModelNet40/PointNet-epoch=199.ckpt",  # PointNet2-epoch=199.ckpt
         weights_dgcnn="data/model_weights/ModelNet40/DGCNN-epoch=249.ckpt",
         weights_pct="data/model_weights/ModelNet40/PCT-epoch=249.ckpt",

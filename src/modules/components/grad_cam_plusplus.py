@@ -1,5 +1,5 @@
 import numpy as np
-from modules.components.base_cam import BaseCAM
+from src.modules.components.base_cam import BaseCAM
 
 # https://arxiv.org/abs/1710.11063
 

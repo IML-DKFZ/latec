@@ -18,11 +18,11 @@ from captum._utils.models.linear_model.model import (
     SkLearnRidge,
 )
 
-from modules.components.score_cam import ScoreCAM
-from modules.components.grad_cam import GradCAM
-from modules.components.grad_cam_plusplus import GradCAMPlusPlus
-from modules.components.attention import AttentionLRP
-from utils.reshape_transforms import *
+from src.modules.components.score_cam import ScoreCAM
+from src.modules.components.grad_cam import GradCAM
+from src.modules.components.grad_cam_plusplus import GradCAMPlusPlus
+from src.modules.components.attention import AttentionLRP
+from src.utils.reshape_transforms import *
 
 
 class XAIMethodsModule:
@@ -44,7 +44,7 @@ class XAIMethodsModule:
             layer = [model.blocks[-1].norm1]
             reshap = (
                 reshape_transform_2D
-                if self.modality == "Image"
+                if self.modality == "image"
                 else reshape_transform_3D
             )
             include_negative = False
@@ -82,7 +82,7 @@ class XAIMethodsModule:
                     self.xai_cfg.occ_sliding_window_shapes,
                     self.xai_cfg.occ_sliding_window_shapes,
                 )
-                if self.modality == "Image"
+                if self.modality == "image"
                 else (
                     (
                         1,
@@ -90,7 +90,7 @@ class XAIMethodsModule:
                         self.xai_cfg.occ_sliding_window_shapes,
                         self.xai_cfg.occ_sliding_window_shapes,
                     )
-                    if self.modality == "Volume"
+                    if self.modality == "volume"
                     else (
                         self.xai_cfg.occ_sliding_window_shapes,
                         1,
@@ -106,7 +106,7 @@ class XAIMethodsModule:
             lime = Lime(
                 model,
                 interpretable_model=SkLearnRidge(alpha=self.xai_cfg.lime_alpha)
-                if self.modality == "Point_Cloud"
+                if self.modality == "point_cloud"
                 else SGDLasso(alpha=self.xai_cfg.lime_alpha),
             )
             self.xai_methods.append(lime)

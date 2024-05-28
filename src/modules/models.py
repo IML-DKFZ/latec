@@ -3,16 +3,16 @@ import torchvision
 from torch import nn
 
 from torchvision.models import efficientnet_b0
-from modules.components.resnet import resnet50
-from modules.components.deit_vit import deit_small_patch16_224, VolumeEmbed
+from src.modules.components.resnet import resnet50
+from src.modules.components.deit_vit import deit_small_patch16_224, VolumeEmbed
 
 from efficientnet_pytorch_3d import EfficientNet3D
 from torchvision.models.video import r3d_18
 from timm.models.layers import trunc_normal_
 
-from modules.components.pointnet import PointNet, PointNet2
-from modules.components.dgcnn import DGCNN
-from modules.components.pc_transformer import PCT
+from src.modules.components.pointnet import PointNet, PointNet2
+from src.modules.components.dgcnn import DGCNN
+from src.modules.components.pc_transformer import PCT
 
 
 def load_from_lightning(model, model_filepath):
@@ -44,7 +44,7 @@ class ModelsModule:
         modality = cfg.data.modality
         self.models = []
 
-        if modality == "Image":
+        if modality == "image":
             if isinstance(cfg.data.weights_vit, bool):
                 self.models.append(resnet50(weights=cfg.data.weights_resnet))
                 self.models.append(efficientnet_b0(weights=cfg.data.weights_effnet))
@@ -69,7 +69,7 @@ class ModelsModule:
                 load_from_lightning(model_3, cfg.data.weights_vit)
                 self.models.append(model_3)
 
-        if modality == "Volume":
+        if modality == "volume":
             #### 3D ResNet 18 ####
             model_1 = r3d_18()
             model_1.stem[0] = nn.Conv3d(
@@ -125,7 +125,7 @@ class ModelsModule:
             load_from_lightning(model_3, cfg.data.weights_s3dformer)
             self.models.append(model_3)
 
-        if modality == "Point_Cloud":
+        if modality == "point_cloud":
             #### PointNet(++) ####
             model_1 = PointNet(classes=cfg.data.num_classes)
             load_from_lightning(model_1, cfg.data.weights_pointnet)

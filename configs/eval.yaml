@@ -17,5 +17,5 @@ time: ${now:%Y-%m-%d}_${now:%H-%M-%S}
 
 # passing checkpoint path is necessary for evaluation
 ckpt_path: ${paths.data_dir}/model_weights/
-attr_path: "/explain_imagenet.npz"
+attr_path: "/saliency_maps_imagenet.npz"
 chunk_size: 2

@@ -13,17 +13,17 @@ task_name: "rank"
 tags: ["dev"]
 time: ${now:%Y-%m-%d}_${now:%H-%M-%S}
 
-full_ranking: True
+full_ranking: False
 idx_model: 0 # Only if full_ranking = True
 
-file_image_inet: "/Image/eval_imagenet_dataset.npz"
-file_image_oct: "/Image/eval_oct_dataset.npz"
-file_image_r45: "/Image/eval_resisc45_dataset.npz"
+file_image_inet: "/image/eval_scores_imagenet.npz"
+file_image_oct: "/image/eval_scores_oct.npz"
+file_image_r45: "/image/eval_scores_resisc45.npz"
 
-file_volume_adr: "/Volume/eval_AdrenalMNIST3D_dataset.npz"
-file_volume_org: "/Volume/eval_OrganMNIST3D_dataset.npz"
-file_volume_ves: "/Volume/eval_VesselMNIST3D_dataset.npz"
+file_volume_adr: "/volume/eval_scores_adrenalmnist3d.npz"
+file_volume_org: "/volume/eval_scores_organmnist3d.npz"
+file_volume_ves: "/volume/eval_scores_vesselmnist3d.npz"
 
-file_pc_coma: "/Point_Cloud/eval_coma_dataset.npz"
-file_pc_m40: "/Point_Cloud/eval_modelnet40_dataset.npz"
-file_pc_shpn: "/Point_Cloud/eval_shapenet_dataset.npz"
+file_pc_coma: "/point_cloud/eval_scores_coma.npz"
+file_pc_m40: "/point_cloud/eval_scores_modelnet40.npz"
+file_pc_shpn: "/point_cloud/eval_scores_shapenet.npz"

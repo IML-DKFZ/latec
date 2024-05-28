@@ -144,16 +144,18 @@ dmypy.json
 *.tar
 *.tar.gz
 *.csv
+*.zip
 
 # Lightning-Hydra-Template
 configs/local/default.yaml
 /data/datasets/*/
-/data/evaluation/Image/*.npz
-/data/evaluation/Point_Cloud/*.npz
-/data/evaluation/Volume/*.npz
-/data/explanation_maps/Image/*.npz
-/data/explanation_maps/Point_Cloud/*.npz
-/data/explanation_maps/Volume/*.npz
+/data/evaluation_scores/image/*.npz
+/data/evaluation_scores/point_cloud/*.npz
+/data/evaluation_scores/volume/*.npz
+/data/saliency_maps/image/*.npz
+/data/saliency_maps/point_cloud/*.npz
+/data/saliency_maps/volume/*.npz
+/data/saliency_maps_old/
 /data/model_weights/*/*.ckpt
 /data/figures/gif/*.gif
 /data/figures/eval_distr/
@@ -162,3 +164,4 @@ configs/local/default.yaml
 /logs/rank/*
 /logs/explain/*
 .env
+

@@ -282,7 +282,7 @@ class PatchEmbed(nn.Module):
 
 
 class VolumeEmbed(nn.Module):
-    """Volume to Patch Embedding (Simplest 3D CNN)"""
+    """volume to Patch Embedding (Simplest 3D CNN)"""
 
     def __init__(
         self, volume_size=128, cell_size=16, patch_size=8, in_chans=1, embed_dim=768

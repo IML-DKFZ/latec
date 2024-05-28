@@ -11,26 +11,18 @@ from omegaconf import DictConfig
 from scipy.stats import sem
 from tqdm.auto import tqdm
 
+pyrootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
 
 def NormalizeData(data, min, max):
     return (data - min) / ((max - min) + 0.00000000001)
 
-
-pyrootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
-
-from src import utils
-
-log = utils.get_pylogger(__name__)
-
-
-@utils.task_wrapper
 def rank(cfg: DictConfig) -> Tuple[dict, dict]:
     # set seed for random number generators in pytorch, numpy and python.random
     if cfg.get("seed"):
         pl.seed_everything(cfg.seed, workers=True)
 
     # Load all evaluation scores
-    file_loc = "./data/evaluation"
+    file_loc = "./data/evaluation_scores"
 
     file = np.load(file_loc + cfg.file_image_inet, allow_pickle=True)
     arr_image_inet = [file["arr_0"], file["arr_1"], file["arr_2"]]
@@ -148,7 +140,7 @@ def rank(cfg: DictConfig) -> Tuple[dict, dict]:
                             modality, dataset, cfg.idx_model, xai, eval[0] : eval[1]
                         ]
                         if cfg.full_ranking == True
-                        else arr_ranking[modality, dataset, xai, eval[0] : eval[1]]
+                else arr_ranking[modality, dataset, xai, eval[0] : eval[1]]
                     )
                     val = np.round(np.mean(x[~np.isnan(x)]))
                     std = np.round(sem(x[~np.isnan(x)]), 2)
@@ -158,9 +150,9 @@ def rank(cfg: DictConfig) -> Tuple[dict, dict]:
                         val = "-"
                         std = "-"
                     arr_col_val.append(val)
-                    arr_col_std.append("±" + str(std))
+                    #arr_col_std.append("±" + str(std))
                 arr_table.append(arr_col_val)
-                arr_table.append(arr_col_std)
+                #arr_table.append(arr_col_std)
 
     df_table = pd.DataFrame(arr_table).transpose()
     df_table.index = [
@@ -191,8 +183,10 @@ def rank(cfg: DictConfig) -> Tuple[dict, dict]:
         header=False,
     )
 
+    print("Done!")
 
-@hydra.main(version_base="1.3", config_path="../configs", config_name="rank.yaml")
+
+@hydra.main(version_base="1.3", config_path= os.getcwd() + "/configs", config_name="rank.yaml")
 def main(cfg: DictConfig) -> Optional[float]:
     rank(cfg)
 

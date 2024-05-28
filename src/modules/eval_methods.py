@@ -22,7 +22,7 @@ from quantus import (
     Complexity,
     EffectiveComplexity,
 )
-from modules.components.insertion_deletion import InsertionDeletion
+from src.modules.components.insertion_deletion import InsertionDeletion
 from captum.metrics import infidelity
 
 
@@ -131,13 +131,13 @@ class EvalModule:
             self.ROAD = ROAD(
                 noise=self.eval_cfg.road_noise,
                 perturb_func=quantus.perturb_func.noisy_linear_imputation
-                if self.modality == "Image"
+                if self.modality == "image"
                 else quantus.perturb_func.gaussian_noise,
                 percentages=list(range(1, self.eval_cfg.road_percentages_max, 2)),
                 perturb_func_kwargs={"indexed_axes": (0, 1)}
-                if self.modality == "Point_Cloud"
+                if self.modality == "point_cloud"
                 else {"indexed_axes": (0, 1, 2)}
-                if self.modality == "Volume"
+                if self.modality == "volume"
                 else None,
                 display_progressbar=False,
                 disable_warnings=True,
@@ -214,17 +214,6 @@ class EvalModule:
                 normalise=self.eval_cfg.normalise,
                 return_nan_when_prediction_changes=False,
             )
-
-        # if self.eval_cfg.Infidelity:
-        #     self.Infidelity = Infidelity(
-        #         perturb_baseline=self.eval_cfg.in_perturb_baseline,
-        #         perturb_func=quantus.perturb_func.baseline_replacement_by_indices,
-        #         n_perturb_samples=self.eval_cfg.in_n_perturb_samples,
-        #         perturb_patch_sizes=[self.eval_cfg.in_perturb_patch_sizes],
-        #         display_progressbar=False,
-        #         disable_warnings=True,
-        #         normalise=self.eval_cfg.normalise,
-        #     )
 
         # Usability
         if self.eval_cfg.Sparseness:
@@ -325,7 +314,7 @@ class EvalModule:
                 x_batch=x_batch,
                 y_batch=y_batch,
                 a_batch=np.expand_dims(np.mean(a_batch, 1), 1)
-                if self.modality == "Image"
+                if self.modality == "image"
                 else a_batch,  # does not work with 3 channel attribution!
                 device=self.eval_cfg.device,
             )
@@ -428,14 +417,14 @@ class EvalModule:
                 torch.from_numpy(x_batch.copy())
                 .to(next(model.parameters()).device)
                 .unsqueeze(1)
-                if self.modality == "Volume"
+                if self.modality == "volume"
                 else torch.from_numpy(x_batch.copy()).to(
                     next(model.parameters()).device
                 ),
                 torch.from_numpy(a_batch.copy())
                 .to(next(model.parameters()).device)
                 .unsqueeze(1)
-                if self.modality == "Volume"
+                if self.modality == "volume"
                 else torch.from_numpy(a_batch.copy()).to(
                     next(model.parameters()).device
                 ),

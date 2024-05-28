@@ -4,9 +4,9 @@ batch_size: 50
 num_workers: 0
 pin_memory: False
 
-modality: Point_Cloud
+modality: point_cloud
 num_classes: 12
 
-weights_pointnet: ${paths.data_dir}/model_weights/CoMA/PointNet-epoch=99-val_F1=0.9867-val_Accuracy=0.9880.ckpt
-weights_dgcnn: ${paths.data_dir}/model_weights/CoMA/DGCNN-epoch=99-val_F1=0.9704-val_Accuracy=0.9753.ckpt
-weights_pct: ${paths.data_dir}/model_weights/CoMA/PCT-epoch=149-val_F1=0.9838-val_Accuracy=0.9850.ckpt
+weights_pointnet: ${paths.data_dir}/model_weights/coma/PointNet-epoch=99-val_F1=0.9867-val_Accuracy=0.9880.ckpt
+weights_dgcnn: ${paths.data_dir}/model_weights/coma/DGCNN-epoch=99-val_F1=0.9704-val_Accuracy=0.9753.ckpt
+weights_pct: ${paths.data_dir}/model_weights/coma/PCT-epoch=149-val_F1=0.9838-val_Accuracy=0.9850.ckpt

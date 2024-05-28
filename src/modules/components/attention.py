@@ -91,24 +91,24 @@ class AttentionLRP:
             )
 
             if method != "full":
-                if self.modality == "Image":
+                if self.modality == "image":
                     atten = np.repeat(
                         np.expand_dims(rescale_attention_2D(atten), (0, 1)), 3, axis=1
                     ).squeeze()
-                elif self.modality == "Volume":
+                elif self.modality == "volume":
                     atten = rescale_attention_3D(atten)
-                elif self.modality == "Point_Cloud":
+                elif self.modality == "point_cloud":
                     atten = np.repeat(
                         np.expand_dims(atten.detach().cpu().numpy(), 0),
                         3,
                         axis=0,
                     ).squeeze()
             else:
-                if self.modality == "Image":
+                if self.modality == "image":
                     atten = np.repeat(
                         np.expand_dims(atten.detach().cpu().numpy(), 1), 3, axis=1
                     ).squeeze()
-                elif self.modality == "Volume" or self.modality == "Point_Cloud":
+                elif self.modality == "volume" or self.modality == "point_cloud":
                     atten = atten.detach().cpu().numpy()
 
                 atten = np.maximum(atten, 0.0)

@@ -20,8 +20,8 @@ def reshape_transform_2D(tensor, height=14, width=14):
     return result
 
 
-def feature_mask(modality="Image"):
-    if modality == "Image":
+def feature_mask(modality="image"):
+    if modality == "image":
         x = np.arange(0, 224 / 16, 1)
 
         x = np.repeat(x, 16, axis=0)
@@ -37,7 +37,7 @@ def feature_mask(modality="Image"):
 
         return torch.from_numpy(mask).type(torch.int64)
 
-    elif modality == "Volume":
+    elif modality == "volume":
         x = np.arange(0, 28 / 7, 1)
 
         x = np.repeat(x, 7, axis=0)
@@ -61,5 +61,5 @@ def feature_mask(modality="Image"):
 
         return torch.from_numpy(mask).type(torch.int64)
 
-    elif modality == "Point_Cloud":
+    elif modality == "point_cloud":
         return None

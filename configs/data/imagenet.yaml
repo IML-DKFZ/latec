@@ -7,7 +7,7 @@ resize: 256
 resize_mode: "bilinear"
 crop: 224
 
-modality: Image
+modality: image
 
 weights_resnet: "IMAGENET1K_V1"
 weights_effnet: "IMAGENET1K_V1"

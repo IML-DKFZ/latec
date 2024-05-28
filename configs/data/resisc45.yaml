@@ -6,9 +6,9 @@ pin_memory: False
 resize: 224
 resize_mode: "bilinear"
 
-modality: Image
+modality: image
 num_classes: 45
 
-weights_resnet: ${paths.data_dir}/model_weights/RESISC45/ResNet50-epoch=59-val_loss=0.15-val_AUROC=1.000.ckpt
-weights_effnet: ${paths.data_dir}/model_weights/RESISC45/EfficientNetB0-epoch=49-val_loss=0.16-val_AUROC=0.999.ckpt
-weights_vit: ${paths.data_dir}//model_weights/RESISC45/DeiTViT-epoch=59-val_loss=0.15-val_AUROC=1.000.ckpt
+weights_resnet: ${paths.data_dir}/model_weights/resisc45/ResNet50-epoch=59-val_loss=0.15-val_AUROC=1.000.ckpt
+weights_effnet: ${paths.data_dir}/model_weights/resisc45/EfficientNetB0-epoch=49-val_loss=0.16-val_AUROC=0.999.ckpt
+weights_vit: ${paths.data_dir}/model_weights/resisc45/DeiTViT-epoch=59-val_loss=0.15-val_AUROC=1.000.ckpt

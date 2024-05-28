@@ -4,9 +4,9 @@ batch_size: 50
 num_workers: 0
 pin_memory: False
 
-modality: Point_Cloud
+modality: point_cloud
 num_classes: 40
 
-weights_pointnet: ${paths.data_dir}/model_weights/ModelNet40/PointNet-epoch=199.ckpt # PointNet2-epoch=199.ckpt
-weights_dgcnn: ${paths.data_dir}/model_weights/ModelNet40/DGCNN-epoch=249.ckpt
-weights_pct: ${paths.data_dir}/model_weights/ModelNet40/PCT-epoch=249.ckpt
+weights_pointnet: ${paths.data_dir}/model_weights/modelnet40/PointNet-epoch=199.ckpt # PointNet2-epoch=199.ckpt
+weights_dgcnn: ${paths.data_dir}/model_weights/modelnet40/DGCNN-epoch=249.ckpt
+weights_pct: ${paths.data_dir}/model_weights/modelnet40/PCT-epoch=249.ckpt

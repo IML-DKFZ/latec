@@ -7,9 +7,9 @@ resize: 256
 resize_mode: "bilinear"
 crop: 224
 
-modality: Image
+modality: image
 num_classes: 4
 
-weights_resnet: ${paths.data_dir}/model_weights/OCT/ResNet50-epoch=7-val_loss=0.01-val_AUROC=1.000.ckpt
-weights_effnet: ${paths.data_dir}/model_weights/OCT/EffNetb0-epoch=4-val_loss=0.00-val_AUROC=1.000.ckpt
-weights_vit: ${paths.data_dir}/model_weights/OCT/DeiTViT-epoch=5-val_loss=0.00-val_AUROC=1.000.ckpt
+weights_resnet: ${paths.data_dir}/model_weights/oct/ResNet50-epoch=7-val_loss=0.01-val_AUROC=1.000.ckpt
+weights_effnet: ${paths.data_dir}/model_weights/oct/EffNetb0-epoch=4-val_loss=0.00-val_AUROC=1.000.ckpt
+weights_vit: ${paths.data_dir}/model_weights/oct/DeiTViT-epoch=5-val_loss=0.00-val_AUROC=1.000.ckpt

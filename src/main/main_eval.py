@@ -1,6 +1,7 @@
 import gc
 from copy import deepcopy
 from typing import List, Optional, Tuple
+import os
 
 import hydra
 import numpy as np
@@ -11,11 +12,11 @@ from omegaconf import DictConfig
 from pytorch_lightning import LightningDataModule
 from tqdm.auto import tqdm
 
-from modules.eval_methods import EvalModule
-from modules.models import ModelsModule
-from modules.xai_methods import XAIMethodsModule
-
 pyrootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
+
+from src.modules.eval_methods import EvalModule
+from src.modules.models import ModelsModule
+from src.modules.xai_methods import XAIMethodsModule
 
 from src import utils
 
@@ -28,13 +29,13 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
     if cfg.get("seed"):
         pl.seed_everything(cfg.seed, workers=True)
 
-    # Load selected saliency maps from ./data/explanation_maps/*modality*
+    # Load selected saliency maps from ./data/saliency_maps/*modality*
     log.info(
         f"Loading saliency maps <{cfg.attr_path}> for modality <{cfg.data.modality}>"
     )
     explain_data = np.load(
         str(cfg.paths.data_dir)
-        + "/explanation_maps/"
+        + "/saliency_maps/"
         + cfg.data.modality
         + "/"
         + cfg.attr_path
@@ -98,7 +99,7 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
                 # Check if observations are tensor
                 if torch.is_tensor(x_batch) == False:
                     x_batch = torch.from_numpy(x_batch).to(cfg.eval_method.device)
-                    if cfg.data.modality == "Volume":
+                    if cfg.data.modality == "volume":
                         x_batch = x_batch.unsqueeze(1)
                 else:
                     x_batch = x_batch.to(cfg.eval_method.device)
@@ -121,9 +122,9 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
                         + str(idx_chunk + cfg.chunk_size)
                     )
 
-                if cfg.data.modality == "Image" or cfg.data.modality == "Point_Cloud":
+                if cfg.data.modality == "image" or cfg.data.modality == "point_cloud":
                     x_batch = x_batch.cpu().numpy()
-                elif cfg.data.modality == "Volume":
+                elif cfg.data.modality == "volume":
                     x_batch = x_batch.squeeze().cpu().numpy()
                     a_batch = a_batch.squeeze()
 
@@ -178,7 +179,7 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
     )
 
 
-@hydra.main(version_base="1.3", config_path="../configs", config_name="eval.yaml")
+@hydra.main(version_base="1.3", config_path= os.getcwd() + "/configs", config_name="eval.yaml")
 def main(cfg: DictConfig) -> Optional[float]:
     eval(cfg)
 

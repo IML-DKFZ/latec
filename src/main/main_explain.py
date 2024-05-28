@@ -1,4 +1,5 @@
 from typing import List, Optional, Tuple
+import os
 
 import hydra
 import numpy as np
@@ -9,15 +10,13 @@ from omegaconf import DictConfig
 from pytorch_lightning import LightningDataModule
 from tqdm.auto import tqdm
 
-from modules.models import ModelsModule
-from modules.xai_methods import XAIMethodsModule
-
 pyrootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
 
+from src.modules.models import ModelsModule
+from src.modules.xai_methods import XAIMethodsModule
 from src import utils
 
 log = utils.get_pylogger(__name__)
-
 
 @utils.task_wrapper
 def explain(cfg: DictConfig) -> Tuple[dict, dict]:
@@ -70,7 +69,7 @@ def explain(cfg: DictConfig) -> Tuple[dict, dict]:
 
     np.savez(
         str(cfg.paths.data_dir)
-        + "/explanation_maps/"
+        + "/saliency_maps/"
         + cfg.data.modality
         + "/explain_"
         + str(datamodule.__name__)
@@ -84,8 +83,7 @@ def explain(cfg: DictConfig) -> Tuple[dict, dict]:
         explain_data[2],
     )
 
-
-@hydra.main(version_base="1.3", config_path="../configs", config_name="explain.yaml")
+@hydra.main(version_base="1.3", config_path= os.getcwd() + "/configs", config_name="explain.yaml")
 def main(cfg: DictConfig) -> Optional[float]:
     explain(cfg)
 

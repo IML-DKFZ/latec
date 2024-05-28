@@ -70,7 +70,7 @@ Depending on your GPU, you need to install an appropriate version of PyTorch and
 ├── data                      - Data storage and ouput folders
 │   ├── datasets              - Datasets for all modalities
 │   ├── evaluation            - Evaluation scores as .npz
-│   ├── explanation_maps      - Saliency maps output as .npz
+│   ├── saliency_mapss      - Saliency maps output as .npz
 │   ├── figures               - Output of figures and gifs
 │   └── model_weights         - Model weights as .ckpt files
 ├── logs                      - Log files             
@@ -89,8 +89,13 @@ Depending on your GPU, you need to install an appropriate version of PyTorch and
 └── main_rank.py              - Runs ranking pipeline
 ```
 
-## 💾&nbsp;&nbsp;LATEC Dataset ([<u>*Download Link*</u>]())
-If you want to reproduce only certain results or use our provided model weights, saliency maps, or evaluation scores for your own experiments, please download them from [here]() and copy them into the respective folder at `./data/`. 
+## 💾&nbsp;&nbsp;LATEC Dataset
+If you want to reproduce only certain results or use our provided model weights, saliency maps, or evaluation scores for your own experiments, please download them here:
+
+- All model weights: [Download](https://polybox.ethz.ch/index.php/s/hSInbioeXqZyDfQ), and unzip them at `./data/`.
+- Saliency maps per dataset: [Download](https://libdrive.ethz.ch/index.php/s/4tm0gxcvBqvMlRA), move them in the respective modality folder and unzip them at `./data/*modality*/`.
+- All evaluation scores: [Download](https://polybox.ethz.ch/index.php/s/oH5A4MTGMJVSN1F), and unzip them at `./data/`.
+
 ## 🚀&nbsp;&nbsp;Getting started 
 ### ♻️&nbsp;Reproducing the Results
 In the case of the [CoMA](https://coma.is.tue.mpg.de/) and [RESISC45](http://www.escience.cn/people/JunweiHan/NWPU-RESISC45.html) datasets, please download the datasets directly from their websites. All other datasets are downloaded automatical into the `./data/datasets/` folder when running the experiment for the first time.
@@ -101,9 +106,9 @@ Select the respective .yaml config for the respective dataset from `./config/dat
 latec-explain data=vesselmnist3d.yaml explain_method=volume.yaml
 ```
 #### **Evaluation Scores**
-For score computation define in addition to the `data` and `explain_method` also the `./config/eval_method/` dataset and add the file name of the .npz file containing the saliency maps, located at `./data/explanation_map/*modality*/`. Then run a command with all four specified such as:
+For score computation define in addition to the `data` and `explain_method` also the `./config/eval_method/` dataset and add the file name of the .npz file containing the saliency maps, located at `./data/saliency_maps/*modality*/`. Then run a command with all four specified such as:
 ```bash
-latec-eval data=vesselmnist3d.yaml explain_method=volume.yaml eval_method=volume_vessel.yaml attr_path='explain_VesselMNIST3D_*n*_methods_*time*.npz'
+latec-eval data=vesselmnist3d.yaml explain_method=volume.yaml eval_method=volume_vessel.yaml attr_path='saliency_maps_vesselmnist3d.npz'
 ```
 #### **Ranking Tables**
 Run the following command but make sure that the paths in `./config/rank.yaml` lead to the correct evaluation score .npz files and the right ranking shema is selected.

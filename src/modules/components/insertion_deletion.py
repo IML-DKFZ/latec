@@ -66,7 +66,7 @@ class InsertionDeletion(BaseEvaluation):
             )
 
             # apply insertion game
-            if self.modality == "Image":
+            if self.modality == "image":
                 blurred_input = self.gaussian_blurr(x_batch)
             else:
                 blurred_input = x_batch + (torch.randn_like(x_batch) * self.sigma)
@@ -103,7 +103,7 @@ class InsertionDeletion(BaseEvaluation):
 
             # perturb # of pixel_batch_size pixels
             for pixel in range(batch):
-                if self.modality == "Volume":
+                if self.modality == "volume":
                     perturb_index = (
                         indices[-3][replaced_pixels + pixel],  # x
                         indices[-2][replaced_pixels + pixel],  # y
@@ -173,11 +173,11 @@ class PixelPerturber(Perturber):
         self.baseline = baseline
 
     def perturb(self, modality, r: int, c: int, v=0):
-        if modality == "Image":
+        if modality == "image":
             self.current[:, r, c] = self.baseline[:, r, c]
-        elif modality == "Point_Cloud":
+        elif modality == "point_cloud":
             self.current[r, c] = self.baseline[r, c]
-        elif modality == "Volume":
+        elif modality == "volume":
             self.current[r, c, v] = self.baseline[r, c, v]
 
     def get_current(self) -> torch.Tensor:
