@@ -12,6 +12,7 @@ from captum.attr import (
     DeepLiftShap,
     Lime,
     LRP,
+    NoiseTunnel
 )
 from captum._utils.models.linear_model.model import (
     SGDLasso,
@@ -132,9 +133,14 @@ class XAIMethodsModule:
             sa_hparams = {}
             self.xai_hparams.append(sa_hparams)
         if self.xai_cfg.input_x_gradient:
-            ixg = InputXGradient(model)
+            ixg = NoiseTunnel(InputXGradient(model))
             self.xai_methods.append(ixg)
-            ixg_hparams = {}
+            ixg_hparams = {
+                "stdevs": 1.0,
+                "nt_type": self.xai_cfg.nt_type,
+                "nt_samples": 6,
+                "nt_samples_batch_size": 2,
+            }
             self.xai_hparams.append(ixg_hparams)
         if self.xai_cfg.guided_backprob:
             gb = GuidedBackprop(model)
@@ -168,34 +174,52 @@ class XAIMethodsModule:
             gcampp_hparams = {}
             self.xai_hparams.append(gcampp_hparams)
         if self.xai_cfg.ig:
-            ig = IntegratedGradients(model)
+            ig = NoiseTunnel(IntegratedGradients(model))
             self.xai_methods.append(ig)
             ig_hparams = {
                 "baselines": self.xai_cfg.ig_baselines,
                 "n_steps": self.xai_cfg.ig_n_steps,
+                "stdevs": 1.0,
+                "nt_type": self.xai_cfg.nt_type,
+                "nt_samples": 6,
+                "nt_samples_batch_size": 2,
             }
             self.xai_hparams.append(ig_hparams)
         if self.xai_cfg.eg:
-            eg = GradientShap(model)
+            eg = NoiseTunnel(GradientShap(model))
             self.xai_methods.append(eg)
             eg_hparams = {
                 "baselines": self.x_batch,
                 "n_samples": self.xai_cfg.eg_n_samples,
-                "stdevs": self.xai_cfg.eg_stdevs,
+                #"stdevs": self.xai_cfg.eg_stdevs,
+                #"nt_stdevs": 1.0,
+                "nt_type": self.xai_cfg.nt_type,
+                "nt_samples": 6,
+                "nt_samples_batch_size": 2,
+                "draw_baseline_from_distrib": True
             }
             self.xai_hparams.append(eg_hparams)
         if self.xai_cfg.deeplift:
-            dl = DeepLift(model, eps=self.xai_cfg.dl_eps)
+            dl = NoiseTunnel(DeepLift(model, eps=self.xai_cfg.dl_eps))
             self.xai_methods.append(dl)
-            dl_hparams = {"baselines": self.xai_cfg.dl_baselines}
+            dl_hparams = {"baselines": self.xai_cfg.dl_baselines,
+                "stdevs": 1.0,
+                "nt_type": self.xai_cfg.nt_type,
+                "nt_samples": 6,
+                "nt_samples_batch_size": 2,}
             self.xai_hparams.append(dl_hparams)
         if self.xai_cfg.deeplift_shap:
-            dlshap = DeepLiftShap(model)
+            dlshap = NoiseTunnel(DeepLiftShap(model))
             self.xai_methods.append(dlshap)
             dlshap_hparams = {
                 "baselines": self.x_batch
                 if self.x_batch.shape[0] < 16
-                else self.x_batch[0:16]
+                else self.x_batch[0:16],
+                "stdevs": 1.0,
+                "nt_type": self.xai_cfg.nt_type,
+                "nt_samples": 6,
+                "nt_samples_batch_size": 2,
+                "draw_baseline_from_distrib": True
             }
             self.xai_hparams.append(dlshap_hparams)
 
@@ -237,7 +261,7 @@ class XAIMethodsModule:
             )
 
         attr_total = np.asarray(
-            [i.detach().numpy() if torch.is_tensor(i) else i for i in attr]
+            [i.detach().cpu().numpy() if torch.is_tensor(i) else i for i in attr]
         )
 
         return np.moveaxis(attr_total, 0, 1)

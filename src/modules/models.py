@@ -47,10 +47,10 @@ class ModelsModule:
         if modality == "image":
             if isinstance(cfg.data.weights_vit, bool):
                 self.models.append(resnet50(weights=cfg.data.weights_resnet))
-                self.models.append(efficientnet_b0(weights=cfg.data.weights_effnet))
-                self.models.append(
-                    deit_small_patch16_224(pretrained=cfg.data.weights_vit)
-                )
+                # self.models.append(efficientnet_b0(weights=cfg.data.weights_effnet))
+                # self.models.append(
+                #     deit_small_patch16_224(pretrained=cfg.data.weights_vit)
+                # )
             else:
                 #### ResNet 50 ####
                 model_1 = resnet50()

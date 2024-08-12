@@ -164,4 +164,5 @@ configs/local/default.yaml
 /logs/rank/*
 /logs/explain/*
 .env
+*.bin
 

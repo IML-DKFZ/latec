@@ -48,7 +48,7 @@ def explain(cfg: DictConfig) -> Tuple[dict, dict]:
         leave=True,
     ):
         # Load XAI methods module
-        xai_methods = XAIMethodsModule(cfg, model, x_batch)
+        xai_methods = XAIMethodsModule(cfg, model.cuda(), x_batch.cuda())
 
         explain_data_model = []
         for idx_chunk in tqdm(
@@ -61,8 +61,8 @@ def explain(cfg: DictConfig) -> Tuple[dict, dict]:
             # Explain chunk
             explain_data_model.append(
                 xai_methods.attribute(
-                    x_batch[idx_chunk : idx_chunk + cfg.chunk_size],
-                    y_batch[idx_chunk : idx_chunk + cfg.chunk_size],
+                    x_batch[idx_chunk : idx_chunk + cfg.chunk_size].cuda(),
+                    y_batch[idx_chunk : idx_chunk + cfg.chunk_size].cuda(),
                 )
             )
 
@@ -80,8 +80,8 @@ def explain(cfg: DictConfig) -> Tuple[dict, dict]:
         + cfg.time
         + ".npz",
         explain_data[0],
-        explain_data[1],
-        explain_data[2],
+        #explain_data[1],
+        #explain_data[2],
     )
 
 

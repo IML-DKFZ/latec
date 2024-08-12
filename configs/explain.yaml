@@ -5,7 +5,7 @@ defaults:
   - data: imagenet.yaml # choose datamodule with `test_dataloader()` for evaluation
   - logger: null
   - paths: default.yaml
-  - explain_method: image.yaml
+  - explain_method: image_top5.yaml
   - extras: default.yaml
   - hydra: default.yaml
 
@@ -16,4 +16,4 @@ time: ${now:%Y-%m-%d}_${now:%H-%M-%S}
 
 # passing checkpoint path is necessary for evaluation
 ckpt_path: ${paths.data_dir}/model_weights/
-chunk_size: 10
+chunk_size: 2

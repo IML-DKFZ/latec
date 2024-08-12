@@ -1,0 +1,52 @@
+# Single:
+occlusion: False
+occ_strides: 25
+occ_sliding_window_shapes: 50
+occ_baselines: 0
+perturbations_per_eval: 1
+
+lime: False
+lime_alpha: 1.0
+lime_n_samples: 10
+lime_perturbations_per_eval: 5 #1
+
+kernel_shap: False
+ks_baselines: 0
+ks_n_samples: 10
+ks_perturbations_per_eval: 5 #1
+
+saliency: False
+
+input_x_gradient: True
+
+guided_backprob: False
+
+gcam: False
+
+scam: False
+scam_batch_size: 32
+
+gcampp: False
+
+ig: True
+ig_baselines: 0
+ig_n_steps: 30
+
+eg: True
+eg_n_samples: 40 # 80
+eg_stdevs: 0.001 #0.001
+
+deeplift: True
+dl_baselines: 0
+
+
+deeplift_shap: True
+
+lrp: False
+lrp_eps: 0.0001
+lrp_gamma: 0.25
+
+attention: False
+
+
+nt_type: "smoothgrad"
