@@ -5,7 +5,7 @@ defaults:
   - data: imagenet.yaml # choose datamodule with `test_dataloader()` for evaluation
   - logger: null
   - paths: default.yaml
-  - explain_method: image_top5.yaml
+  - explain_method: image.yaml
   - extras: default.yaml
   - hydra: default.yaml
 

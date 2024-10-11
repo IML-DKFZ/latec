@@ -1,7 +1,7 @@
 <br />
 <p align="center">
   <a href=" ">
-    <img src="data/figures/misc/logo.png" alt="Logo" width="600"> 
+    <img src="data/figures/misc/logo.png" alt="Logo" width="500"> 
   </a>
 
   <h1 align="center">Large-scale Attribution & Attention Evaluation in Computer Vision <i>(REVIEWER VERSION)</i></h1>
@@ -70,7 +70,7 @@ Depending on your GPU, you need to install an appropriate version of PyTorch and
 ├── data                      - Data storage and ouput folders
 │   ├── datasets              - Datasets for all modalities
 │   ├── evaluation            - Evaluation scores as .npz
-│   ├── saliency_mapss      - Saliency maps output as .npz
+│   ├── saliency_mapss        - Saliency maps output as .npz
 │   ├── figures               - Output of figures and gifs
 │   └── model_weights         - Model weights as .ckpt files
 ├── logs                      - Log files             
