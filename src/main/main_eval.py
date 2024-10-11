@@ -54,7 +54,7 @@ def _load_saliency_maps(cfg: DictConfig) -> List[np.ndarray]:
             cfg.paths.data_dir, "saliency_maps", cfg.data.modality, cfg.attr_path
         )
     )
-    return [explain_data["arr_0"]] #, explain_data["arr_1"], explain_data["arr_2"]]
+    return [explain_data["arr_0"], explain_data["arr_1"], explain_data["arr_2"]]
 
 
 def _instantiate_datamodule(
@@ -158,7 +158,6 @@ def _evaluate_chunks(
         if cfg.data.modality == "volume":
             x_batch = x_batch.squeeze()
             a_batch = a_batch.squeeze()
-
 
         scores = eval_methods.evaluate(
             model,
