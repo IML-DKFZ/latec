@@ -1,0 +1,80 @@
+# Faithfulness
+
+faithfulnesscorrelation:
+  nr_runs: 100
+  subset_size: 32
+  perturb_baseline: "black"
+
+faithfulnessestimate:
+  features_in_step: 32
+  perturb_baseline: "black"
+
+monotonicitycorrelation:
+  nr_samples: 10
+  features_in_step: 256
+  perturb_baseline: "uniform"
+
+pixelflipping:
+  features_in_step: 32
+  perturb_baseline: "black"
+
+regionperturbation:
+  patch_size: 3
+  regions_evaluation: 32
+  perturb_baseline: "uniform"
+
+insertion:
+  pixel_batch_size: 50 
+  sigma: 0.1
+  kernel_size: 1
+
+deletion:
+  pixel_batch_size: 50
+
+irof:
+  segmentation_method: "knn"
+  perturb_baseline: "black"
+
+road:
+  noise: 0.15 
+  percentages_max: 100
+
+sufficiency:
+  threshold: 0.75
+
+infidelity:
+  n_perturb_samples: 50
+
+# Robustness
+
+locallipschitzestimate:
+  nr_samples: 5
+  perturb_std: 0.1
+  perturb_mean: 0.0
+
+maxsensitivity:
+  nr_samples: 10
+  lower_bound: 0.2
+
+continuity:
+  patch_size: 3
+  nr_steps: 20
+  perturb_baseline: "uniform"
+
+relativeinputstability:
+  nr_samples: 10
+
+relativeoutputstability:
+  nr_samples: 10
+
+relativerepresentationstability:
+  nr_samples: 10
+
+# Complexity
+
+sparseness: {}
+
+complexity: {}
+
+effectivecomplexity:
+  eps: 0.001

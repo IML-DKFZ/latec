@@ -12,7 +12,7 @@ from captum.attr import (
     DeepLiftShap,
     Lime,
     LRP,
-    NoiseTunnel
+    NoiseTunnel,
 )
 from captum._utils.models.linear_model.model import (
     SGDLasso,
@@ -24,244 +24,83 @@ from src.modules.components.grad_cam import GradCAM
 from src.modules.components.grad_cam_plusplus import GradCAMPlusPlus
 from src.modules.components.attention import AttentionLRP
 from src.utils.reshape_transforms import *
+from src.utils.hidden_layer_selection import get_hidden_layer
+from src.modules.registry.xai_methods_registry import xai_method_registry
 
 
 class XAIMethodsModule:
     def __init__(self, cfg, model, x_batch):
-        self.modality = cfg.data.modality
-        self.xai_cfg = cfg.explain_method
-        self.x_batch = x_batch
-        self.model = model
-
-        if model.__class__.__name__ == "ResNet":
-            layer = [model.layer4[-1]]
-            reshap = None
-            include_negative = False
-        elif model.__class__.__name__ == "EfficientNet":
-            layer = [model.features[-1]]
-            reshap = None
-            include_negative = False
-        elif model.__class__.__name__ == "VisionTransformer":
-            layer = [model.blocks[-1].norm1]
-            reshap = (
-                reshape_transform_2D
-                if self.modality == "image"
-                else reshape_transform_3D
-            )
-            include_negative = False
-        elif model.__class__.__name__ == "EfficientNet3D":
-            layer = [model._blocks[-13]]
-            reshap = None
-            include_negative = False
-        elif model.__class__.__name__ == "VideoResNet":
-            layer = [model.layer3]
-            reshap = None
-            include_negative = False
-        elif model.__class__.__name__ == "PointNet":
-            layer = [model.transform.bn1]
-            reshap = None
-            include_negative = False
-        elif model.__class__.__name__ == "DGCNN":
-            layer = [model.conv5]
-            reshap = None
-            include_negative = False
-        elif model.__class__.__name__ == "PCT":
-            layer = [model.pt_last.sa4.after_norm]
-            reshap = reshape_transform_2D
-            # include_negative = True
+        modality = cfg.data.modality
+        xai_cfg = cfg.explain_method
 
         self.xai_methods = []
         self.xai_hparams = []
 
-        if self.xai_cfg.occlusion:
-            occ = Occlusion(model)
-            self.xai_methods.append(occ)
-            occ_hparams = {
-                "strides": self.xai_cfg.occ_strides,
-                "sliding_window_shapes": (
-                    x_batch.shape[1],
-                    self.xai_cfg.occ_sliding_window_shapes,
-                    self.xai_cfg.occ_sliding_window_shapes,
-                )
-                if self.modality == "image"
-                else (
-                    (
-                        1,
-                        self.xai_cfg.occ_sliding_window_shapes,
-                        self.xai_cfg.occ_sliding_window_shapes,
-                        self.xai_cfg.occ_sliding_window_shapes,
-                    )
-                    if self.modality == "volume"
-                    else (
-                        self.xai_cfg.occ_sliding_window_shapes,
-                        1,
-                    )
-                ),
-                "baselines": self.xai_cfg.occ_baselines,
-                "perturbations_per_eval": self.xai_cfg.perturbations_per_eval,
-                "show_progress": False,
-            }
-            self.xai_hparams.append(occ_hparams)
+        # Select layer, reshape, and include_negative parameters
+        layer, reshape, include_negative = get_hidden_layer(model, modality)
 
-        if self.xai_cfg.lime:
-            lime = Lime(
-                model,
-                interpretable_model=SkLearnRidge(alpha=self.xai_cfg.lime_alpha)
-                if self.modality == "point_cloud"
-                else SGDLasso(alpha=self.xai_cfg.lime_alpha),
-            )
-            self.xai_methods.append(lime)
-            lime_hparams = {
-                "n_samples": self.xai_cfg.lime_n_samples,
-                "perturbations_per_eval": self.xai_cfg.lime_perturbations_per_eval,
-                "feature_mask": feature_mask(self.modality),
-            }
-            self.xai_hparams.append(lime_hparams)
-        if self.xai_cfg.kernel_shap:
-            ks = KernelShap(model)
-            self.xai_methods.append(ks)
-            ks_hparams = {
-                "baselines": self.xai_cfg.ks_baselines,
-                "n_samples": self.xai_cfg.ks_n_samples,
-                "perturbations_per_eval": self.xai_cfg.ks_perturbations_per_eval,
-                "feature_mask": feature_mask(self.modality),
-            }
-            self.xai_hparams.append(ks_hparams)
-        if self.xai_cfg.saliency:
-            sa = Saliency(model)
-            self.xai_methods.append(sa)
-            sa_hparams = {}
-            self.xai_hparams.append(sa_hparams)
-        if self.xai_cfg.input_x_gradient:
-            ixg = NoiseTunnel(InputXGradient(model))
-            self.xai_methods.append(ixg)
-            ixg_hparams = {
-                "stdevs": 1.0,
-                "nt_type": self.xai_cfg.nt_type,
-                "nt_samples": 6,
-                "nt_samples_batch_size": 2,
-            }
-            self.xai_hparams.append(ixg_hparams)
-        if self.xai_cfg.guided_backprob:
-            gb = GuidedBackprop(model)
-            self.xai_methods.append(gb)
-            gb_hparams = {}
-            self.xai_hparams.append(gb_hparams)
-        if self.xai_cfg.gcam:
-            gcam = GradCAM(
-                model,
-                layer,
-                reshape_transform=reshap,
-                include_negative=include_negative,
-            )
-            self.xai_methods.append(gcam)
-            gcam_hparams = {}
-            self.xai_hparams.append(gcam_hparams)
-        if self.xai_cfg.scam:
-            scam = ScoreCAM(model, layer, reshape_transform=reshap)
-            scam.batch_size = self.xai_cfg.scam_batch_size
-            self.xai_methods.append(scam)
-            scam_hparams = {}
-            self.xai_hparams.append(scam_hparams)
-        if self.xai_cfg.gcampp:
-            gcampp = GradCAMPlusPlus(
-                model,
-                layer,
-                reshape_transform=reshap,
-                include_negative=include_negative,
-            )
-            self.xai_methods.append(gcampp)
-            gcampp_hparams = {}
-            self.xai_hparams.append(gcampp_hparams)
-        if self.xai_cfg.ig:
-            ig = NoiseTunnel(IntegratedGradients(model))
-            self.xai_methods.append(ig)
-            ig_hparams = {
-                "baselines": self.xai_cfg.ig_baselines,
-                "n_steps": self.xai_cfg.ig_n_steps,
-                "stdevs": 1.0,
-                "nt_type": self.xai_cfg.nt_type,
-                "nt_samples": 6,
-                "nt_samples_batch_size": 2,
-            }
-            self.xai_hparams.append(ig_hparams)
-        if self.xai_cfg.eg:
-            eg = NoiseTunnel(GradientShap(model))
-            self.xai_methods.append(eg)
-            eg_hparams = {
-                "baselines": self.x_batch,
-                "n_samples": self.xai_cfg.eg_n_samples,
-                #"stdevs": self.xai_cfg.eg_stdevs,
-                #"nt_stdevs": 1.0,
-                "nt_type": self.xai_cfg.nt_type,
-                "nt_samples": 6,
-                "nt_samples_batch_size": 2,
-                "draw_baseline_from_distrib": True
-            }
-            self.xai_hparams.append(eg_hparams)
-        if self.xai_cfg.deeplift:
-            dl = NoiseTunnel(DeepLift(model, eps=self.xai_cfg.dl_eps))
-            self.xai_methods.append(dl)
-            dl_hparams = {"baselines": self.xai_cfg.dl_baselines,
-                "stdevs": 1.0,
-                "nt_type": self.xai_cfg.nt_type,
-                "nt_samples": 6,
-                "nt_samples_batch_size": 2,}
-            self.xai_hparams.append(dl_hparams)
-        if self.xai_cfg.deeplift_shap:
-            dlshap = NoiseTunnel(DeepLiftShap(model))
-            self.xai_methods.append(dlshap)
-            dlshap_hparams = {
-                "baselines": self.x_batch
-                if self.x_batch.shape[0] < 16
-                else self.x_batch[0:16],
-                "stdevs": 1.0,
-                "nt_type": self.xai_cfg.nt_type,
-                "nt_samples": 6,
-                "nt_samples_batch_size": 2,
-                "draw_baseline_from_distrib": True
-            }
-            self.xai_hparams.append(dlshap_hparams)
-
-        if self.xai_cfg.lrp or self.xai_cfg.attention:
-            if (
-                model.__class__.__name__ == "VisionTransformer"
-                or model.__class__.__name__ == "PCT"
-            ):
-                lrp = AttentionLRP(model, modality=self.modality)
-                self.xai_methods.append(lrp)
-                lrp_hparams = {"method": "full"}
-                self.xai_hparams.append(lrp_hparams)
-
-                self.xai_methods.append(lrp)
-                raw_hparams = {"method": "last_layer_attn"}
-                self.xai_hparams.append(raw_hparams)
-
-                self.xai_methods.append(lrp)
-                roll_hparams = {"method": "rollout"}
-                self.xai_hparams.append(roll_hparams)
-
-                self.xai_methods.append(lrp)
-                attlrp_hparams = {"method": "transformer_attribution"}
-                self.xai_hparams.append(attlrp_hparams)
-            else:
-                lrp = LRP(
-                    model, epsilon=self.xai_cfg.lrp_eps, gamma=self.xai_cfg.lrp_gamma
-                )
-                lrp_hparams = {}
-                self.xai_hparams.append(lrp_hparams)
-                self.xai_methods.append(lrp)
-
-    def attribute(self, x, y):  # .attribute() for compatibility with dependencies
-        attr = []
-
-        for i in range(len(self.xai_methods)):
-            attr.append(
-                self.xai_methods[i].attribute(inputs=x, target=y, **self.xai_hparams[i])
-            )
-
-        attr_total = np.asarray(
-            [i.detach().cpu().numpy() if torch.is_tensor(i) else i for i in attr]
+        # Initialize XAI methods and their hyperparameters
+        self._initialize_xai_methods(
+            xai_cfg, model, modality, x_batch, layer, reshape, include_negative
         )
 
+    def _initialize_xai_methods(
+        self, xai_cfg, model, modality, x_batch, layer, reshape, include_negative
+    ):
+        """Initialize XAI methods and their hyperparameters."""
+        for xai_method in xai_cfg.keys():
+            method, hparams = self._create_xai_method(
+                xai_method,
+                xai_cfg,
+                model,
+                modality,
+                x_batch,
+                layer,
+                reshape,
+                include_negative,
+            )
+
+            if method:
+                self.xai_methods.append(method)
+                self.xai_hparams.append(hparams)
+
+    def _create_xai_method(
+        self,
+        xai_method,
+        xai_cfg,
+        model,
+        modality,
+        x_batch,
+        layer,
+        reshape,
+        include_negative,
+    ):
+        """Create an individual XAI method and its hyperparameters."""
+        method_creator = xai_method_registry.get_method(xai_method)
+        return method_creator(
+            dict(xai_cfg.get(xai_method, {})).copy(),
+            model,
+            modality,
+            x_batch,
+            layer=layer,
+            reshape=reshape,
+            include_negative=include_negative,
+        )
+
+    def attribute(self, x, y):
+        # Generate the attributes using a list comprehension
+        attr = [
+            method.attribute(inputs=x, target=y, **params)
+            for method, params in zip(self.xai_methods, self.xai_hparams)
+        ]
+
+        # Convert attributes to numpy arrays if they are tensors
+        attr_total = np.asarray(
+            [
+                item.detach().cpu().numpy() if torch.is_tensor(item) else item
+                for item in attr
+            ]
+        )
+
+        # Reorder the axes of the numpy array
         return np.moveaxis(attr_total, 0, 1)
