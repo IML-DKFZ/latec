@@ -24,15 +24,36 @@ class EvalMetricsModule:
 
         return eval_metrics
 
-    def evaluate(self, model, x_batch, y_batch, a_batch, xai_methods, count_xai, custom_batch):
+    def evaluate(
+        self, model, x_batch, y_batch, a_batch, xai_methods, count_xai, custom_batch
+    ):
         """Evaluate the metrics using the provided model and data."""
         eval_scores = [
-            self._evaluate_single_metric(metric, model, x_batch, y_batch, a_batch, xai_methods, count_xai, custom_batch)
+            self._evaluate_single_metric(
+                metric,
+                model,
+                x_batch,
+                y_batch,
+                a_batch,
+                xai_methods,
+                count_xai,
+                custom_batch,
+            )
             for metric in self.eval_metrics
         ]
         return eval_scores
 
-    def _evaluate_single_metric(self, metric, model, x_batch, y_batch, a_batch, xai_methods, count_xai, custom_batch):
+    def _evaluate_single_metric(
+        self,
+        metric,
+        model,
+        x_batch,
+        y_batch,
+        a_batch,
+        xai_methods,
+        count_xai,
+        custom_batch,
+    ):
         """Evaluate a single metric with the specified parameters."""
         return metric(
             model=model,
@@ -44,4 +65,3 @@ class EvalMetricsModule:
             device=device,
             custom_batch=custom_batch,
         )
-

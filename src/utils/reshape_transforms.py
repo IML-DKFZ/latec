@@ -46,11 +46,11 @@ def feature_mask(modality="image"):
     Creates a feature mask for different modalities (image, volume, point cloud) to be used in feature extraction or visualization.
 
     Parameters:
-    - modality (str, optional): The data modality for which to create the feature mask. 
+    - modality (str, optional): The data modality for which to create the feature mask.
                                 Supported values are "image", "volume", and "point_cloud". Default is "image".
 
     Returns:
-    - torch.Tensor or None: The feature mask as a tensor of integers for the specified modality. 
+    - torch.Tensor or None: The feature mask as a tensor of integers for the specified modality.
                             Returns None for unsupported modalities like "point_cloud".
     """
     if modality == "image":

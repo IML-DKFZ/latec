@@ -17,9 +17,17 @@ def normalize_data(data, data_min, data_max):
     return (data - data_min) / (data_max - data_min + 1e-10)
 
 
-def load_evaluation_scores(file_loc: str, filenames: List[str]) -> List[List[np.ndarray]]:
+def load_evaluation_scores(
+    file_loc: str, filenames: List[str]
+) -> List[List[np.ndarray]]:
     """Load evaluation scores for the given list of filenames."""
-    return [[np.load(os.path.join(file_loc, filename), allow_pickle=True)[f"arr_{i}"] for i in range(3)] for filename in filenames]
+    return [
+        [
+            np.load(os.path.join(file_loc, filename), allow_pickle=True)[f"arr_{i}"]
+            for i in range(3)
+        ]
+        for filename in filenames
+    ]
 
 
 def prepare_modalities(cfg: DictConfig) -> List[List[List[np.ndarray]]]:
@@ -37,25 +45,36 @@ def prepare_modalities(cfg: DictConfig) -> List[List[List[np.ndarray]]]:
     return [arr_image, arr_volume, arr_pc]
 
 
-def compute_full_ranking(arr_modalities: List[List[List[np.ndarray]]], bup_order: List[int]) -> np.ndarray:
+def compute_full_ranking(
+    arr_modalities: List[List[List[np.ndarray]]], bup_order: List[int]
+) -> np.ndarray:
     """Compute the full ranking across models, datasets, and modalities."""
-    arr_ranking = np.full([3, 3, 3, 17, 20], np.nan)  # modality, dataset, model, xai, eval
+    arr_ranking = np.full(
+        [3, 3, 3, 17, 20], np.nan
+    )  # modality, dataset, model, xai, eval
 
     for modality in range(3):
         for dataset in range(3):
             for model in range(3):
                 for xai in range(arr_modalities[modality][dataset][model].shape[0]):
                     for eval_idx in range(20):
-                        ranking = np.median(arr_modalities[modality][dataset][model][:, eval_idx, :], axis=-1).argsort()
+                        ranking = np.median(
+                            arr_modalities[modality][dataset][model][:, eval_idx, :],
+                            axis=-1,
+                        ).argsort()
                         if eval_idx in bup_order:
-                            ranking = ranking[::-1]  # reverse ranking if larger is better
+                            ranking = ranking[
+                                ::-1
+                            ]  # reverse ranking if larger is better
                         pos = ranking.argsort()[xai] + 1  # start ranking from 1
                         arr_ranking[modality, dataset, model, xai, eval_idx] = pos
 
     return arr_ranking
 
 
-def compute_model_ranking(arr_modalities: List[List[List[np.ndarray]]], bup_order: List[int]) -> np.ndarray:
+def compute_model_ranking(
+    arr_modalities: List[List[List[np.ndarray]]], bup_order: List[int]
+) -> np.ndarray:
     """Compute ranking across models for each modality and dataset."""
     arr_ranking = np.full([3, 3, 17, 20], np.nan)  # modality, dataset, xai, eval
 
@@ -71,16 +90,16 @@ def compute_model_ranking(arr_modalities: List[List[List[np.ndarray]]], bup_orde
                     arr_models.append(normalize_data(data, data_min, data_max))
 
                 combined_data = np.concatenate(
-                        [
-                            np.median(
-                                np.hstack(
-                                    [arr_models[0], arr_models[1], arr_models[2][:-3]]
-                                ),
-                                -1,
+                    [
+                        np.median(
+                            np.hstack(
+                                [arr_models[0], arr_models[1], arr_models[2][:-3]]
                             ),
-                            np.median(arr_models[2][-3:], -1),
-                        ]
-                    )
+                            -1,
+                        ),
+                        np.median(arr_models[2][-3:], -1),
+                    ]
+                )
                 ranking = combined_data.argsort()
                 if eval_idx in bup_order:
                     ranking = ranking[::-1]
@@ -104,13 +123,47 @@ def create_ranking_table(arr_ranking: np.ndarray, cfg: DictConfig) -> pd.DataFra
                         arr_col_val = arr_col_val + ["-", "-", "-"]
                     if modality == 2 and xai == 14:
                         break
-                    x = arr_ranking[modality, dataset, cfg.idx_model, xai, eval_range[0]:eval_range[1]] if cfg.full_ranking else arr_ranking[modality, dataset, xai, eval_range[0]:eval_range[1]]
-                    val = int(np.round(np.mean(x[~np.isnan(x)]))) if not np.isnan(np.mean(x)) else "-"
+                    x = (
+                        arr_ranking[
+                            modality,
+                            dataset,
+                            cfg.idx_model,
+                            xai,
+                            eval_range[0] : eval_range[1],
+                        ]
+                        if cfg.full_ranking
+                        else arr_ranking[
+                            modality, dataset, xai, eval_range[0] : eval_range[1]
+                        ]
+                    )
+                    val = (
+                        int(np.round(np.mean(x[~np.isnan(x)])))
+                        if not np.isnan(np.mean(x))
+                        else "-"
+                    )
                     arr_col_val.append(val)
                 arr_table.append(arr_col_val)
 
     df_table = pd.DataFrame(arr_table).transpose()
-    df_table.index = ["OC", "LI", "KS", "VG", "IxG", "GB", "GC", "SC", "C+", "IG", "EG", "DL", "DLS", "LRP", "RA", "RoA", "LA"]
+    df_table.index = [
+        "OC",
+        "LI",
+        "KS",
+        "VG",
+        "IxG",
+        "GB",
+        "GC",
+        "SC",
+        "C+",
+        "IG",
+        "EG",
+        "DL",
+        "DLS",
+        "LRP",
+        "RA",
+        "RoA",
+        "LA",
+    ]
     return df_table
 
 
@@ -128,14 +181,22 @@ def rank(cfg: DictConfig) -> None:
     arr_modalities = prepare_modalities(cfg)
     bup_order = [0, 1, 2, 4, 5, 7, 9, 12, 17]
 
-    arr_ranking = compute_full_ranking(arr_modalities, bup_order) if cfg.full_ranking else compute_model_ranking(arr_modalities, bup_order)
+    arr_ranking = (
+        compute_full_ranking(arr_modalities, bup_order)
+        if cfg.full_ranking
+        else compute_model_ranking(arr_modalities, bup_order)
+    )
     df_table = create_ranking_table(arr_ranking, cfg)
     save_ranking_table(df_table, cfg)
 
     print("Ranking process completed!")
 
 
-@hydra.main(version_base="1.3", config_path=os.path.join(os.getcwd(), "configs"), config_name="rank.yaml")
+@hydra.main(
+    version_base="1.3",
+    config_path=os.path.join(os.getcwd(), "configs"),
+    config_name="rank.yaml",
+)
 def main(cfg: DictConfig) -> Optional[float]:
     rank(cfg)
 
