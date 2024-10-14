@@ -155,7 +155,6 @@ configs/local/default.yaml
 /data/saliency_maps/image/*.npz
 /data/saliency_maps/point_cloud/*.npz
 /data/saliency_maps/volume/*.npz
-/data/saliency_maps_old/
 /data/model_weights/*/*.ckpt
 /data/figures/gif/*.gif
 /data/figures/eval_distr/
@@ -166,4 +165,3 @@ configs/local/default.yaml
 .env
 *.bin
 *hp_sensitivity.ipynb
-*test.ipynb

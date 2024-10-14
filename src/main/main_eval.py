@@ -25,6 +25,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 @utils.task_wrapper
 def eval(cfg: DictConfig) -> Tuple[dict, dict]:
+    """Main evaluation loop."""
     _set_random_seed(cfg)
     explain_data = _load_saliency_maps(cfg)
     datamodule, dataloader = _instantiate_datamodule(cfg)

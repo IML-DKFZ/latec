@@ -22,6 +22,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 @utils.task_wrapper
 def explain(cfg: DictConfig) -> Tuple[dict, dict]:
+    """Main explanation loop."""
     # Set seed for random number generators
     _set_random_seed(cfg)
 

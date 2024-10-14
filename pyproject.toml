@@ -7,7 +7,7 @@ name = "latec"
 dynamic = ["version"]
 requires-python = ">=3.10"
 dependencies = [
-    "captum @ git+https://github.com/kjdhfg/captum.git",
+    "captum @ git+https://github.com/lukaskln/captum.git",
     "efficientnet-pytorch==0.7.1",
     "efficientnet-pytorch-3d @ git+https://github.com/shijianjian/EfficientNet-PyTorch-3D",
     "einops==0.6.0",
@@ -20,7 +20,7 @@ dependencies = [
     "pandas==1.5.3",
     "pyrootutils==1.0.4",
     "pytorch-lightning==1.8.6",
-    "quantus @ git+https://github.com/kjdhfg/Quantus.git",
+    "quantus @ git+https://github.com/lukaskln/Quantus.git",
     "rich==13.3.2",
     "scipy==1.9.1",
     "timm==0.6.12",
